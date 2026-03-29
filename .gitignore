@@ -10,7 +10,10 @@ android/capacitor-cordova-android-plugins/build/
 sermons/
 sermons_ssml/
 sermons_notes/
+sermons_html/
 www/data/sermons
+www/data/sermons_html
+www/data/prayers_ssml
 www/data/ssml
 www/data/notes
 www/data/prayers

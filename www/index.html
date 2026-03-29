@@ -278,11 +278,37 @@ body {
   padding: 1.2rem;
   font-size: 1.05rem;
   line-height: 1.75;
-  white-space: pre-wrap;
   word-wrap: break-word;
   max-width: 700px;
   margin: 0 auto;
 }
+.detail-text p {
+  margin: 0.8em 0;
+  text-indent: 1.5em;
+}
+.detail-text p:first-child { text-indent: 0; }
+.detail-text h2 {
+  font-size: 1.1em;
+  font-weight: normal;
+  font-style: italic;
+  text-align: center;
+  margin: 0.5em 0 1.2em;
+  color: var(--accent);
+}
+.detail-text blockquote {
+  margin: 0.8em 1.5em;
+  padding-left: 1em;
+  border-left: 3px solid var(--gold);
+  font-style: italic;
+}
+.detail-text .verse {
+  text-align: center;
+  font-style: italic;
+  margin: 1em 0;
+  line-height: 1.9;
+}
+.detail-text em { font-style: italic; }
+.detail-text strong { font-weight: 600; }
 .detail-text.loading {
   text-align: center;
   color: var(--faded);
@@ -335,6 +361,39 @@ body {
 .search-input-wrap input:focus {
   border-color: var(--gold);
   outline: none;
+}
+.index-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0.5rem 1rem;
+  background: var(--parchment-dark);
+}
+.index-tab {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--gold);
+  background: transparent;
+  color: var(--ink);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.index-tab:first-child { border-radius: 4px 0 0 4px; }
+.index-tab:last-child { border-radius: 0 4px 4px 0; }
+.index-tab.active {
+  background: var(--gold);
+  color: var(--parchment);
+}
+.index-letter-header {
+  padding: 0.3rem 1rem;
+  background: var(--parchment-dark);
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--accent);
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 .search-hint {
   padding: 2rem 1rem;
@@ -646,6 +705,16 @@ body {
     <div id="fav-list" class="list-container"></div>
   </div>
 
+  <!-- INDEX -->
+  <div id="view-index" class="view">
+    <div class="index-tabs">
+      <button class="index-tab active" id="idx-tab-title">By Title</button>
+      <button class="index-tab" id="idx-tab-verse">By Verse</button>
+    </div>
+    <div id="index-title-list" class="list-container"></div>
+    <div id="index-verse-list" class="list-container" style="display:none"></div>
+  </div>
+
   <!-- SEARCH -->
   <div id="view-search" class="view">
     <div class="search-input-wrap">
@@ -674,6 +743,10 @@ body {
   <button class="tab" data-tab="favorites" id="tab-favorites">
     <span class="tab-icon">&#x2764;</span>
     <span class="tab-label">Favorites</span>
+  </button>
+  <button class="tab" data-tab="index" id="tab-index">
+    <span class="tab-icon">&#x1F4D1;</span>
+    <span class="tab-label">Index</span>
   </button>
   <button class="tab" data-tab="search" id="tab-search">
     <span class="tab-icon">&#x1F50D;</span>
@@ -963,6 +1036,7 @@ function switchTab(tab) {
   updateHeaderTitle();
 
   if (tab === 'favorites') renderFavorites();
+  if (tab === 'index') renderIndex();
   if (tab === 'search') {
     setTimeout(function() { $searchInput.focus(); }, 100);
   }
@@ -975,7 +1049,7 @@ function showView(id) {
 }
 
 function updateHeaderTitle() {
-  var titles = { sermons: 'Sermons', prayers: 'Prayers', favorites: 'Favorites', search: 'Search' };
+  var titles = { sermons: 'Sermons', prayers: 'Prayers', favorites: 'Favorites', index: 'Index', search: 'Search' };
   $headerTitle.textContent = titles[currentTab] || 'Spurgeon';
 }
 
@@ -1124,20 +1198,28 @@ function openSermon(num) {
   $headerTitle.textContent = '#' + s.num;
   history.pushState({ tab: currentTab, detail: 'sermon', num: num }, '', '');
 
-  fetch('./data/sermons/' + s.file + '.txt')
+  fetch('./data/sermons_html/' + s.file + '.html')
     .then(function(r) {
-      if (!r.ok) throw new Error('Not found');
+      if (!r.ok) throw new Error('No HTML');
       return r.text();
     })
-    .then(function(text) {
+    .then(function(html) {
       textEl.className = 'detail-text';
-      // Skip first 3 lines (title, number, blank) to avoid repeating header info
-      var lines = text.split('\n');
-      textEl.textContent = lines.slice(3).join('\n');
+      textEl.innerHTML = html;
     })
     .catch(function() {
-      textEl.className = 'detail-text';
-      textEl.textContent = 'Sermon text not available. Ensure files are symlinked or copied to www/data/sermons/.';
+      // Fall back to plain text
+      fetch('./data/sermons/' + s.file + '.txt')
+        .then(function(r) { return r.ok ? r.text() : Promise.reject(); })
+        .then(function(text) {
+          textEl.className = 'detail-text';
+          var lines = text.split('\n');
+          textEl.textContent = lines.slice(3).join('\n');
+        })
+        .catch(function() {
+          textEl.className = 'detail-text';
+          textEl.textContent = 'Sermon text not available.';
+        });
     });
 
   closeAudio();
@@ -1311,6 +1393,139 @@ $favList.addEventListener('click', function(e) {
   if (!item) return;
   if (item.dataset.type === 'sermon') openSermon(parseInt(item.dataset.num));
   else openPrayer(parseInt(item.dataset.num));
+});
+
+/* ========== INDEX ========== */
+var indexRendered = false;
+var indexMode = 'title'; // 'title' or 'verse'
+
+function renderIndex() {
+  if (indexRendered) return;
+  indexRendered = true;
+  renderIndexByTitle();
+  renderIndexByVerse();
+}
+
+function renderIndexByTitle() {
+  var sorted = manifest.sermons.slice().sort(function(a, b) {
+    return a.title.toLowerCase().localeCompare(b.title.toLowerCase());
+  });
+  var html = '';
+  var lastLetter = '';
+  for (var i = 0; i < sorted.length; i++) {
+    var s = sorted[i];
+    var letter = (s.title[0] || '').toUpperCase();
+    if (letter !== lastLetter) {
+      lastLetter = letter;
+      html += '<div class="index-letter-header">' + letter + '</div>';
+    }
+    html += '<div class="list-item" data-type="sermon" data-num="' + s.num + '">'
+      + '<div class="list-num">#' + s.num + '</div>'
+      + '<div class="list-body">'
+      + '<div class="list-title">' + escHtml(s.title) + '</div>'
+      + (s.scripture ? '<div class="list-sub">' + escHtml(s.scripture) + '</div>' : '')
+      + '</div></div>';
+  }
+  document.getElementById('index-title-list').innerHTML = html;
+}
+
+function renderIndexByVerse() {
+  // Group sermons by Bible book
+  var bookOrder = [
+    'Genesis','Exodus','Leviticus','Numbers','Deuteronomy','Joshua','Judges','Ruth',
+    '1 Samuel','2 Samuel','1 Kings','2 Kings','1 Chronicles','2 Chronicles',
+    'Ezra','Nehemiah','Esther','Job','Psalm','Psalms','Proverbs','Ecclesiastes',
+    'Song of Solomon','Isaiah','Jeremiah','Lamentations','Ezekiel','Daniel',
+    'Hosea','Joel','Amos','Obadiah','Jonah','Micah','Nahum','Habakkuk',
+    'Zephaniah','Haggai','Zechariah','Malachi',
+    'Matthew','Mark','Luke','John','Acts','Romans',
+    '1 Corinthians','2 Corinthians','Galatians','Ephesians','Philippians',
+    'Colossians','1 Thessalonians','2 Thessalonians','1 Timothy','2 Timothy',
+    'Titus','Philemon','Hebrews','James','1 Peter','2 Peter',
+    '1 John','2 John','3 John','Jude','Revelation'
+  ];
+  var bookMap = {};
+  for (var i = 0; i < bookOrder.length; i++) bookMap[bookOrder[i].toLowerCase()] = i;
+
+  function parseBook(ref) {
+    if (!ref) return { book: '', ch: 0, vs: 0 };
+    // Match book name (possibly with leading number)
+    var m = ref.match(/^(\d?\s*[A-Za-z]+(?:\s+[A-Za-z]+)?)\s*(\d*):?(\d*)/);
+    if (!m) return { book: ref, ch: 0, vs: 0 };
+    return { book: m[1].trim(), ch: parseInt(m[2]) || 0, vs: parseInt(m[3]) || 0 };
+  }
+
+  var withScripture = manifest.sermons.filter(function(s) { return s.scripture; });
+  withScripture.sort(function(a, b) {
+    var pa = parseBook(a.scripture);
+    var pb = parseBook(b.scripture);
+    var oa = bookMap[pa.book.toLowerCase()];
+    var ob = bookMap[pb.book.toLowerCase()];
+    if (oa === undefined) oa = 999;
+    if (ob === undefined) ob = 999;
+    if (oa !== ob) return oa - ob;
+    if (pa.ch !== pb.ch) return pa.ch - pb.ch;
+    return pa.vs - pb.vs;
+  });
+
+  var html = '';
+  var lastBook = '';
+  for (var i = 0; i < withScripture.length; i++) {
+    var s = withScripture[i];
+    var parsed = parseBook(s.scripture);
+    var bookName = parsed.book;
+    if (bookName.toLowerCase() !== lastBook.toLowerCase()) {
+      lastBook = bookName;
+      html += '<div class="index-letter-header">' + escHtml(bookName) + '</div>';
+    }
+    html += '<div class="list-item" data-type="sermon" data-num="' + s.num + '">'
+      + '<div class="list-num">#' + s.num + '</div>'
+      + '<div class="list-body">'
+      + '<div class="list-title">' + escHtml(s.title) + '</div>'
+      + '<div class="list-sub">' + escHtml(s.scripture) + '</div>'
+      + '</div></div>';
+  }
+
+  // Add sermons without scripture at the end
+  var noScripture = manifest.sermons.filter(function(s) { return !s.scripture; });
+  if (noScripture.length > 0) {
+    html += '<div class="index-letter-header">No Scripture Reference</div>';
+    for (var i = 0; i < noScripture.length; i++) {
+      var s = noScripture[i];
+      html += '<div class="list-item" data-type="sermon" data-num="' + s.num + '">'
+        + '<div class="list-num">#' + s.num + '</div>'
+        + '<div class="list-body">'
+        + '<div class="list-title">' + escHtml(s.title) + '</div>'
+        + '</div></div>';
+    }
+  }
+  document.getElementById('index-verse-list').innerHTML = html;
+}
+
+// Index tab switching
+document.getElementById('idx-tab-title').addEventListener('click', function() {
+  indexMode = 'title';
+  this.classList.add('active');
+  document.getElementById('idx-tab-verse').classList.remove('active');
+  document.getElementById('index-title-list').style.display = 'block';
+  document.getElementById('index-verse-list').style.display = 'none';
+});
+document.getElementById('idx-tab-verse').addEventListener('click', function() {
+  indexMode = 'verse';
+  this.classList.add('active');
+  document.getElementById('idx-tab-title').classList.remove('active');
+  document.getElementById('index-title-list').style.display = 'none';
+  document.getElementById('index-verse-list').style.display = 'block';
+});
+
+// Index list click handler
+document.getElementById('index-title-list').addEventListener('click', function(e) {
+  var item = e.target.closest('.list-item');
+  if (item) openSermon(parseInt(item.dataset.num));
+});
+document.getElementById('index-verse-list').addEventListener('click', function(e) {
+  var item = e.target.closest('.list-item');
+  if (item) openSermon(parseInt(item.dataset.num));
 });
 
 /* ========== SEARCH ========== */
