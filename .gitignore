@@ -1,0 +1,28 @@
+node_modules/
+android/.gradle/
+android/build/
+android/app/build/
+android/app/src/main/assets/
+android/capacitor-cordova-android-plugins/build/
+*.apk
+
+# Generated data (large, reproducible from PDFs via scripts)
+sermons/
+sermons_ssml/
+sermons_notes/
+www/data/sermons
+www/data/ssml
+www/data/notes
+www/data/prayers
+www/data/mp3
+www/data/manifest.json
+
+# Large binary files
+VolOrder.zip
+VolOrder/
+mp3/
+jimsvoice.m4a
+
+# Environment
+.env
+__pycache__/

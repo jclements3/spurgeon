@@ -1,0 +1,23 @@
+{
+  "name": "spurgeon",
+  "version": "1.0.0",
+  "description": "Spurgeon sermons and devotional writings reader app.",
+  "scripts": {
+    "sync": "npx cap sync android",
+    "build:debug": "npm run sync && cd android && ./gradlew assembleDebug",
+    "build:release": "npm run sync && cd android && ./gradlew assembleRelease",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor-community/text-to-speech": "^5.1.0",
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^6.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2"
+  }
+}

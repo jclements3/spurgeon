@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Spurgeon</string>
+    <string name="title_activity_main">Spurgeon</string>
+    <string name="package_name">org.spurgeon.sermons</string>
+    <string name="custom_url_scheme">org.spurgeon.sermons</string>
+</resources>

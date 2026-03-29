@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#8B6914">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Spurgeon - Sermons &amp; Prayers</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1208;
+  --parchment: #f5edda;
+  --parchment-dark: #e8d9b8;
+  --gold: #8B6914;
+  --gold-light: #c4972a;
+  --terracotta: #7a3b2e;
+  --faded: #9e8b6e;
+  --white: #fdfaf3;
+  --highlight: #fff3cd;
+  --tab-height: 56px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: 'Crimson Pro', serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== HEADER ===== */
+#app-header {
+  background: var(--ink);
+  color: var(--parchment);
+  padding: 0.8rem 1rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#app-header::before {
+  content: 'C.H. SPURGEON';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  letter-spacing: 0.5rem;
+  opacity: 0.05;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: 'Crimson Pro', serif;
+}
+#app-header h1 {
+  font-size: 1.4rem;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  position: relative;
+}
+#back-btn {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--gold-light);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: none;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== CONTENT AREA ===== */
+#content-area {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.view {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: none;
+  padding-bottom: 1rem;
+}
+.view.active { display: block; }
+
+/* ===== FILTER BAR ===== */
+.filter-bar {
+  background: var(--parchment-dark);
+  border-bottom: 2px solid var(--gold);
+  padding: 0.6rem 1rem;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.filter-bar label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--faded);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.filter-bar select {
+  background: var(--white);
+  border: 1px solid var(--parchment-dark);
+  color: var(--ink);
+  padding: 0.35rem 0.6rem;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.95rem;
+  border-radius: 0;
+  min-height: 36px;
+  -webkit-appearance: none;
+}
+.filter-bar select:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+
+/* ===== LIST ITEMS ===== */
+.list-container { padding: 0; }
+.list-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--parchment-dark);
+  cursor: pointer;
+  transition: background 0.15s;
+  min-height: 52px;
+  gap: 0.6rem;
+}
+.list-item:active { background: var(--highlight); }
+.list-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--gold);
+  min-width: 2.8rem;
+  padding-top: 0.15rem;
+  flex-shrink: 0;
+}
+.list-body { flex: 1; min-width: 0; }
+.list-title {
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.list-sub {
+  font-size: 0.8rem;
+  color: var(--faded);
+  font-style: italic;
+  margin-top: 0.1rem;
+}
+.list-fav {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.3rem;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--parchment-dark);
+  transition: color 0.15s;
+}
+.list-fav.favorited { color: var(--terracotta); }
+
+/* ===== PAGINATION ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem;
+  flex-wrap: wrap;
+}
+.pagination button {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 0.4rem 1rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  min-width: 44px;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+.pagination button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.pagination button:not(:disabled):active {
+  background: var(--gold);
+  color: var(--white);
+}
+.pagination span {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--faded);
+}
+
+/* ===== DETAIL VIEW ===== */
+.detail-header {
+  background: var(--parchment-dark);
+  border-bottom: 2px solid var(--gold);
+  padding: 1rem 1.2rem;
+}
+.detail-title {
+  font-size: 1.4rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+.detail-meta {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--faded);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+}
+.detail-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+  flex-wrap: wrap;
+}
+.detail-btn {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 0.35rem 0.9rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  transition: all 0.2s;
+  min-height: 36px;
+}
+.detail-btn.on {
+  background: var(--gold);
+  color: var(--white);
+}
+.detail-btn:active {
+  background: var(--gold);
+  color: var(--white);
+}
+.detail-text {
+  padding: 1.2rem;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.detail-text.loading {
+  text-align: center;
+  color: var(--faded);
+  font-style: italic;
+  padding-top: 3rem;
+}
+.notes-section {
+  background: var(--highlight);
+  border-top: 2px solid var(--gold);
+  padding: 1.2rem;
+  margin-top: 1rem;
+}
+.notes-section h3 {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 0.8rem;
+}
+.notes-text {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* ===== SEARCH ===== */
+.search-input-wrap {
+  padding: 0.8rem 1rem;
+  background: var(--parchment-dark);
+  border-bottom: 2px solid var(--gold);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.search-input-wrap input {
+  width: 100%;
+  background: var(--white);
+  border: 1px solid var(--parchment-dark);
+  color: var(--ink);
+  padding: 0.6rem 1rem;
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.1rem;
+  border-radius: 0;
+  min-height: 44px;
+}
+.search-input-wrap input:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+.search-hint {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--faded);
+  font-style: italic;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--faded);
+}
+.empty-state p {
+  font-style: italic;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+.empty-state small {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+}
+
+/* ===== AUDIO PLAYER ===== */
+#audio-bar {
+  display: none;
+  background: var(--ink);
+  color: var(--parchment);
+  padding: 0.5rem 1rem;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  min-height: 48px;
+}
+#audio-bar.visible { display: flex; }
+#audio-bar button {
+  background: none;
+  border: none;
+  color: var(--gold-light);
+  font-size: 1.2rem;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#audio-progress {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.15);
+  position: relative;
+  cursor: pointer;
+  border-radius: 2px;
+}
+#audio-progress-fill {
+  height: 100%;
+  background: var(--gold-light);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.3s linear;
+}
+#audio-time {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--faded);
+  min-width: 3rem;
+  text-align: right;
+}
+#audio-speed {
+  background: none;
+  border: 1px solid var(--gold);
+  color: var(--gold-light);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  padding: 0.2rem 0.4rem;
+  cursor: pointer;
+  min-width: 36px;
+  min-height: 32px;
+}
+#audio-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 2px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  display: none;
+}
+#audio-badge.mp3 {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--white);
+}
+#audio-badge.tts {
+  display: inline-block;
+  background: var(--terracotta);
+  color: var(--parchment);
+}
+
+/* ===== BOTTOM TAB BAR ===== */
+#tab-bar {
+  background: var(--ink);
+  display: flex;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(139,105,20,0.3);
+}
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0;
+  min-height: var(--tab-height);
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--faded);
+  transition: color 0.2s;
+  font-family: 'Space Mono', monospace;
+}
+.tab-icon { font-size: 1.3rem; line-height: 1; }
+.tab-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 0.2rem;
+}
+.tab.active { color: var(--gold-light); }
+
+/* Safe area for notched phones */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  #tab-bar { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* ===== TABLET ===== */
+@media (min-width: 768px) {
+  .list-item { padding: 1rem 1.5rem; }
+  .detail-text { font-size: 1.15rem; padding: 1.5rem 2rem; }
+  .detail-header { padding: 1.2rem 2rem; }
+  #app-header h1 { font-size: 1.6rem; }
+}
+
+/* ===== LARGE TABLET / DESKTOP ===== */
+@media (min-width: 1024px) {
+  .list-container { max-width: 800px; margin: 0 auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="app-header">
+  <button id="back-btn" aria-label="Go back">&#x2190;</button>
+  <h1 id="header-title">Spurgeon</h1>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="content-area">
+
+  <!-- SERMONS LIST -->
+  <div id="view-sermons" class="view active">
+    <div class="filter-bar">
+      <label>Volume</label>
+      <select id="vol-filter"></select>
+      <label style="margin-left:auto">Sort</label>
+      <select id="sort-filter">
+        <option value="num">Number</option>
+        <option value="title">Title</option>
+      </select>
+    </div>
+    <div id="sermon-list" class="list-container"></div>
+    <div id="sermon-pagination" class="pagination"></div>
+  </div>
+
+  <!-- SERMON DETAIL -->
+  <div id="view-sermon-detail" class="view">
+    <div class="detail-header">
+      <div class="detail-title" id="sermon-detail-title"></div>
+      <div class="detail-meta" id="sermon-detail-meta"></div>
+      <div class="detail-actions">
+        <button class="detail-btn" id="notes-toggle">Speaker Notes</button>
+        <button class="detail-btn" id="sermon-fav-btn"></button>
+      </div>
+    </div>
+    <div class="detail-text loading" id="sermon-detail-text">Loading sermon...</div>
+    <div class="notes-section" id="notes-section" style="display:none">
+      <h3>Speaker Notes</h3>
+      <div class="notes-text" id="notes-text"></div>
+    </div>
+  </div>
+
+  <!-- PRAYERS LIST -->
+  <div id="view-prayers" class="view">
+    <div id="prayer-list" class="list-container"></div>
+  </div>
+
+  <!-- PRAYER DETAIL -->
+  <div id="view-prayer-detail" class="view">
+    <div class="detail-header">
+      <div class="detail-title" id="prayer-detail-title"></div>
+      <div class="detail-meta" id="prayer-detail-meta"></div>
+      <div class="detail-actions">
+        <button class="detail-btn" id="prayer-fav-btn"></button>
+      </div>
+    </div>
+    <div class="detail-text loading" id="prayer-detail-text">Loading prayer...</div>
+  </div>
+
+  <!-- FAVORITES -->
+  <div id="view-favorites" class="view">
+    <div id="fav-list" class="list-container"></div>
+  </div>
+
+  <!-- SEARCH -->
+  <div id="view-search" class="view">
+    <div class="search-input-wrap">
+      <input type="search" id="search-input" placeholder="Search by title, number, or scripture...">
+    </div>
+    <div id="search-results" class="list-container">
+      <div class="search-hint">Search sermons and prayers by title, sermon number, or scripture reference.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- AUDIO PLAYER -->
+<div id="audio-bar">
+  <button id="audio-play-btn" aria-label="Play/Pause">&#9654;</button>
+  <span id="audio-badge"></span>
+  <div id="audio-progress">
+    <div id="audio-progress-fill"></div>
+  </div>
+  <span id="audio-time">0:00</span>
+  <button id="audio-speed">1x</button>
+  <button id="audio-close-btn" aria-label="Close audio">&#x2715;</button>
+</div>
+
+<!-- BOTTOM TAB BAR -->
+<div id="tab-bar">
+  <button class="tab active" data-tab="sermons" id="tab-sermons">
+    <span class="tab-icon">&#x1F4D6;</span>
+    <span class="tab-label">Sermons</span>
+  </button>
+  <button class="tab" data-tab="prayers" id="tab-prayers">
+    <span class="tab-icon">&#x1F64F;</span>
+    <span class="tab-label">Prayers</span>
+  </button>
+  <button class="tab" data-tab="favorites" id="tab-favorites">
+    <span class="tab-icon">&#x2764;</span>
+    <span class="tab-label">Favorites</span>
+  </button>
+  <button class="tab" data-tab="search" id="tab-search">
+    <span class="tab-icon">&#x1F50D;</span>
+    <span class="tab-label">Search</span>
+  </button>
+</div>
+
+<audio id="audio-el" preload="none"></audio>
+
+<script>
+(function() {
+'use strict';
+
+/* ========== STATE ========== */
+var manifest = { sermons: [], prayers: [] };
+var favorites = [];
+try { favorites = JSON.parse(localStorage.getItem('spurgeon-favs') || '[]'); } catch(e) { favorites = []; }
+var currentTab = 'sermons';
+var sermonPage = 0;
+var filteredSermons = [];
+var PAGE_SIZE = 50;
+var currentDetailType = null;
+var currentDetailItem = null;
+var notesVisible = false;
+var audioPlaying = false;
+var speeds = [1, 1.25, 1.5, 1.75, 2, 0.75];
+var speedIdx = 0;
+var searchTimeout = null;
+
+/* ========== TTS STATE ========== */
+var ttsMode = false;       // true when using TTS instead of MP3
+var ttsChunks = [];        // array of text chunks to speak
+var ttsChunkIdx = 0;       // current chunk being spoken
+var ttsSpeaking = false;   // is TTS currently speaking?
+var ttsPaused = false;     // is TTS paused?
+var ttsAvailable = false;  // can we use TTS on this platform?
+var ttsUseNative = false;  // use Capacitor plugin (Android) vs Web Speech API
+
+// Detect TTS capability
+try {
+  if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+    ttsAvailable = true;
+    ttsUseNative = true;
+  } else if (window.speechSynthesis) {
+    ttsAvailable = true;
+    ttsUseNative = false;
+  }
+} catch(e) { /* not available */ }
+
+/* ========== DOM REFS ========== */
+var $headerTitle = document.getElementById('header-title');
+var $backBtn = document.getElementById('back-btn');
+var $volFilter = document.getElementById('vol-filter');
+var $sortFilter = document.getElementById('sort-filter');
+var $sermonList = document.getElementById('sermon-list');
+var $sermonPag = document.getElementById('sermon-pagination');
+var $prayerList = document.getElementById('prayer-list');
+var $favList = document.getElementById('fav-list');
+var $searchInput = document.getElementById('search-input');
+var $searchResults = document.getElementById('search-results');
+var $audioEl = document.getElementById('audio-el');
+var $audioBar = document.getElementById('audio-bar');
+var $audioPlayBtn = document.getElementById('audio-play-btn');
+var $audioProgress = document.getElementById('audio-progress');
+var $audioProgressFill = document.getElementById('audio-progress-fill');
+var $audioTime = document.getElementById('audio-time');
+var $audioSpeed = document.getElementById('audio-speed');
+var $audioBadge = document.getElementById('audio-badge');
+
+/* ========== INIT ========== */
+function init() {
+  fetch('./data/manifest.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      manifest = data;
+      populateVolumeFilter();
+      filteredSermons = manifest.sermons.slice();
+      renderSermonList();
+      renderPrayerList();
+    })
+    .catch(function(e) { console.error('Failed to load manifest:', e); });
+
+  // Event listeners
+  $backBtn.addEventListener('click', goBack);
+  $volFilter.addEventListener('change', filterSermons);
+  $sortFilter.addEventListener('change', filterSermons);
+  $searchInput.addEventListener('input', onSearch);
+  document.getElementById('notes-toggle').addEventListener('click', toggleNotes);
+  document.getElementById('sermon-fav-btn').addEventListener('click', toggleFavDetail);
+  document.getElementById('prayer-fav-btn').addEventListener('click', toggleFavDetail);
+  $audioPlayBtn.addEventListener('click', toggleAudio);
+  $audioProgress.addEventListener('click', seekAudio);
+  $audioSpeed.addEventListener('click', cycleSpeed);
+  document.getElementById('audio-close-btn').addEventListener('click', closeAudio);
+
+  // Tab bar
+  document.querySelectorAll('.tab').forEach(function(btn) {
+    btn.addEventListener('click', function() { switchTab(this.dataset.tab); });
+  });
+
+  // Audio events
+  $audioEl.addEventListener('loadedmetadata', function() { $audioBar.classList.add('visible'); });
+  $audioEl.addEventListener('error', function() { $audioBar.classList.remove('visible'); });
+  $audioEl.addEventListener('timeupdate', function() {
+    if ($audioEl.duration) {
+      $audioProgressFill.style.width = ($audioEl.currentTime / $audioEl.duration * 100) + '%';
+      $audioTime.textContent = formatTime($audioEl.currentTime);
+    }
+  });
+  $audioEl.addEventListener('ended', function() {
+    audioPlaying = false;
+    $audioPlayBtn.innerHTML = '&#9654;';
+  });
+
+  // History
+  window.addEventListener('popstate', function(e) { goBack(); });
+
+  // Service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(function() {});
+  }
+}
+
+/* ========== TAB SWITCHING ========== */
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('tab-' + tab).classList.add('active');
+  showView('view-' + tab);
+  $backBtn.style.display = 'none';
+  updateHeaderTitle();
+
+  if (tab === 'favorites') renderFavorites();
+  if (tab === 'search') {
+    setTimeout(function() { $searchInput.focus(); }, 100);
+  }
+  history.pushState({ tab: tab }, '', '');
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+function updateHeaderTitle() {
+  var titles = { sermons: 'Sermons', prayers: 'Prayers', favorites: 'Favorites', search: 'Search' };
+  $headerTitle.textContent = titles[currentTab] || 'Spurgeon';
+}
+
+/* ========== SERMON LIST ========== */
+function populateVolumeFilter() {
+  var html = '<option value="0">All (1\u201363)</option>';
+  for (var v = 1; v <= 63; v++) {
+    html += '<option value="' + v + '">Vol ' + v + '</option>';
+  }
+  $volFilter.innerHTML = html;
+}
+
+function filterSermons() {
+  var vol = parseInt($volFilter.value);
+  var sort = $sortFilter.value;
+
+  filteredSermons = manifest.sermons.slice();
+  if (vol > 0) {
+    filteredSermons = filteredSermons.filter(function(s) { return s.volume === vol; });
+  }
+  if (sort === 'title') {
+    filteredSermons.sort(function(a, b) { return a.title.localeCompare(b.title); });
+  } else {
+    filteredSermons.sort(function(a, b) { return a.num - b.num; });
+  }
+
+  sermonPage = 0;
+  renderSermonList();
+}
+
+function renderSermonList() {
+  var start = sermonPage * PAGE_SIZE;
+  var page = filteredSermons.slice(start, start + PAGE_SIZE);
+  var html = '';
+
+  for (var i = 0; i < page.length; i++) {
+    var s = page[i];
+    var fav = isFavorite('sermon', s.num);
+    html += '<div class="list-item" data-type="sermon" data-num="' + s.num + '">'
+      + '<div class="list-num">#' + s.num + '</div>'
+      + '<div class="list-body">'
+      + '<div class="list-title">' + escHtml(s.title) + '</div>'
+      + (s.scripture ? '<div class="list-sub">' + escHtml(s.scripture) + '</div>' : '')
+      + '</div>'
+      + '<button class="list-fav' + (fav ? ' favorited' : '') + '" data-fav-type="sermon" data-fav-num="' + s.num + '">'
+      + (fav ? '&#x2764;' : '&#x2661;')
+      + '</button></div>';
+  }
+  $sermonList.innerHTML = html;
+
+  // Pagination
+  var totalPages = Math.ceil(filteredSermons.length / PAGE_SIZE);
+  if (totalPages <= 1) {
+    $sermonPag.innerHTML = '';
+    return;
+  }
+  $sermonPag.innerHTML =
+    '<button data-page="0"' + (sermonPage === 0 ? ' disabled' : '') + '>First</button>'
+    + '<button data-page="prev"' + (sermonPage === 0 ? ' disabled' : '') + '>Prev</button>'
+    + '<span>' + (sermonPage + 1) + ' / ' + totalPages + '</span>'
+    + '<button data-page="next"' + (sermonPage >= totalPages - 1 ? ' disabled' : '') + '>Next</button>'
+    + '<button data-page="' + (totalPages - 1) + '"' + (sermonPage >= totalPages - 1 ? ' disabled' : '') + '>Last</button>';
+}
+
+// Delegated click handlers for sermon list and pagination
+$sermonList.addEventListener('click', function(e) {
+  var favBtn = e.target.closest('.list-fav');
+  if (favBtn) {
+    e.stopPropagation();
+    toggleFav(favBtn.dataset.favType, parseInt(favBtn.dataset.favNum), favBtn);
+    return;
+  }
+  var item = e.target.closest('.list-item');
+  if (item) openSermon(parseInt(item.dataset.num));
+});
+
+$sermonPag.addEventListener('click', function(e) {
+  var btn = e.target.closest('button');
+  if (!btn || btn.disabled) return;
+  var p = btn.dataset.page;
+  if (p === 'prev') sermonPage--;
+  else if (p === 'next') sermonPage++;
+  else sermonPage = parseInt(p);
+  renderSermonList();
+  document.getElementById('view-sermons').scrollTop = 0;
+});
+
+/* ========== PRAYER LIST ========== */
+function renderPrayerList() {
+  var html = '';
+  for (var i = 0; i < manifest.prayers.length; i++) {
+    var p = manifest.prayers[i];
+    var fav = isFavorite('prayer', p.num);
+    html += '<div class="list-item" data-type="prayer" data-num="' + p.num + '">'
+      + '<div class="list-num">' + p.num + '</div>'
+      + '<div class="list-body">'
+      + '<div class="list-title">' + escHtml(p.title) + '</div>'
+      + '</div>'
+      + '<button class="list-fav' + (fav ? ' favorited' : '') + '" data-fav-type="prayer" data-fav-num="' + p.num + '">'
+      + (fav ? '&#x2764;' : '&#x2661;')
+      + '</button></div>';
+  }
+  $prayerList.innerHTML = html;
+}
+
+$prayerList.addEventListener('click', function(e) {
+  var favBtn = e.target.closest('.list-fav');
+  if (favBtn) {
+    e.stopPropagation();
+    toggleFav(favBtn.dataset.favType, parseInt(favBtn.dataset.favNum), favBtn);
+    return;
+  }
+  var item = e.target.closest('.list-item');
+  if (item) openPrayer(parseInt(item.dataset.num));
+});
+
+/* ========== DETAIL VIEWS ========== */
+function openSermon(num) {
+  var s = null;
+  for (var i = 0; i < manifest.sermons.length; i++) {
+    if (manifest.sermons[i].num === num) { s = manifest.sermons[i]; break; }
+  }
+  if (!s) return;
+  currentDetailType = 'sermon';
+  currentDetailItem = s;
+  notesVisible = false;
+
+  document.getElementById('sermon-detail-title').textContent = s.title;
+  document.getElementById('sermon-detail-meta').textContent =
+    'Sermon #' + s.num + (s.scripture ? '  |  ' + s.scripture : '') + '  |  Volume ' + s.volume;
+
+  var fav = isFavorite('sermon', s.num);
+  var favBtn = document.getElementById('sermon-fav-btn');
+  favBtn.textContent = fav ? 'Favorited' : 'Favorite';
+  favBtn.classList.toggle('on', fav);
+
+  document.getElementById('notes-toggle').classList.remove('on');
+  document.getElementById('notes-section').style.display = 'none';
+
+  var textEl = document.getElementById('sermon-detail-text');
+  textEl.className = 'detail-text loading';
+  textEl.textContent = 'Loading sermon...';
+
+  showView('view-sermon-detail');
+  $backBtn.style.display = 'flex';
+  $headerTitle.textContent = '#' + s.num;
+  history.pushState({ tab: currentTab, detail: 'sermon', num: num }, '', '');
+
+  fetch('./data/sermons/' + s.file + '.txt')
+    .then(function(r) {
+      if (!r.ok) throw new Error('Not found');
+      return r.text();
+    })
+    .then(function(text) {
+      textEl.className = 'detail-text';
+      textEl.textContent = text;
+    })
+    .catch(function() {
+      textEl.className = 'detail-text';
+      textEl.textContent = 'Sermon text not available. Ensure files are symlinked or copied to www/data/sermons/.';
+    });
+
+  closeAudio();
+  checkSermonAudio(s.file);
+}
+
+function openPrayer(num) {
+  var p = null;
+  for (var i = 0; i < manifest.prayers.length; i++) {
+    if (manifest.prayers[i].num === num) { p = manifest.prayers[i]; break; }
+  }
+  if (!p) return;
+  currentDetailType = 'prayer';
+  currentDetailItem = p;
+
+  document.getElementById('prayer-detail-title').textContent = p.title;
+  document.getElementById('prayer-detail-meta').textContent = 'Prayer #' + p.num;
+
+  var fav = isFavorite('prayer', p.num);
+  var favBtn = document.getElementById('prayer-fav-btn');
+  favBtn.textContent = fav ? 'Favorited' : 'Favorite';
+  favBtn.classList.toggle('on', fav);
+
+  var textEl = document.getElementById('prayer-detail-text');
+  textEl.className = 'detail-text loading';
+  textEl.textContent = 'Loading prayer...';
+
+  showView('view-prayer-detail');
+  $backBtn.style.display = 'flex';
+  $headerTitle.textContent = 'Prayer #' + p.num;
+  history.pushState({ tab: currentTab, detail: 'prayer', num: num }, '', '');
+
+  fetch('./data/prayers/' + p.file + '.txt')
+    .then(function(r) {
+      if (!r.ok) throw new Error('Not found');
+      return r.text();
+    })
+    .then(function(text) {
+      textEl.className = 'detail-text';
+      textEl.textContent = text;
+    })
+    .catch(function() {
+      textEl.className = 'detail-text';
+      textEl.textContent = 'Prayer text not available. Ensure files are symlinked or copied to www/data/prayers/.';
+    });
+
+  closeAudio();
+  checkPrayerAudio(p);
+}
+
+function toggleNotes() {
+  if (!currentDetailItem) return;
+  notesVisible = !notesVisible;
+  document.getElementById('notes-toggle').classList.toggle('on', notesVisible);
+  var section = document.getElementById('notes-section');
+
+  if (notesVisible) {
+    section.style.display = 'block';
+    var notesEl = document.getElementById('notes-text');
+    notesEl.textContent = 'Loading notes...';
+    fetch('./data/notes/' + currentDetailItem.file + '.txt')
+      .then(function(r) {
+        if (!r.ok) throw new Error('Not found');
+        return r.text();
+      })
+      .then(function(text) { notesEl.textContent = text; })
+      .catch(function() { notesEl.textContent = 'Speaker notes not available.'; });
+  } else {
+    section.style.display = 'none';
+  }
+}
+
+function goBack() {
+  $backBtn.style.display = 'none';
+  showView('view-' + currentTab);
+  updateHeaderTitle();
+  closeAudio();
+}
+
+/* ========== FAVORITES ========== */
+function favKey(type, num) { return type + ':' + num; }
+
+function isFavorite(type, num) {
+  return favorites.indexOf(favKey(type, num)) !== -1;
+}
+
+function toggleFav(type, num, btnEl) {
+  var key = favKey(type, num);
+  var idx = favorites.indexOf(key);
+  if (idx === -1) {
+    favorites.push(key);
+    if (btnEl) { btnEl.classList.add('favorited'); btnEl.innerHTML = '&#x2764;'; }
+  } else {
+    favorites.splice(idx, 1);
+    if (btnEl) { btnEl.classList.remove('favorited'); btnEl.innerHTML = '&#x2661;'; }
+  }
+  localStorage.setItem('spurgeon-favs', JSON.stringify(favorites));
+}
+
+function toggleFavDetail() {
+  if (!currentDetailItem || !currentDetailType) return;
+  var key = favKey(currentDetailType, currentDetailItem.num);
+  var idx = favorites.indexOf(key);
+  if (idx === -1) favorites.push(key);
+  else favorites.splice(idx, 1);
+  localStorage.setItem('spurgeon-favs', JSON.stringify(favorites));
+
+  var btnId = currentDetailType === 'sermon' ? 'sermon-fav-btn' : 'prayer-fav-btn';
+  var btn = document.getElementById(btnId);
+  var fav = isFavorite(currentDetailType, currentDetailItem.num);
+  btn.textContent = fav ? 'Favorited' : 'Favorite';
+  btn.classList.toggle('on', fav);
+}
+
+function renderFavorites() {
+  if (favorites.length === 0) {
+    $favList.innerHTML = '<div class="empty-state"><p>No favorites yet</p>'
+      + '<small>Tap the heart icon on any sermon or prayer to save it here.</small></div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < favorites.length; i++) {
+    var parts = favorites[i].split(':');
+    var type = parts[0];
+    var num = parseInt(parts[1]);
+
+    if (type === 'sermon') {
+      var s = null;
+      for (var j = 0; j < manifest.sermons.length; j++) {
+        if (manifest.sermons[j].num === num) { s = manifest.sermons[j]; break; }
+      }
+      if (!s) continue;
+      html += '<div class="list-item" data-type="sermon" data-num="' + s.num + '">'
+        + '<div class="list-num">#' + s.num + '</div>'
+        + '<div class="list-body">'
+        + '<div class="list-title">' + escHtml(s.title) + '</div>'
+        + (s.scripture ? '<div class="list-sub">' + escHtml(s.scripture) + '</div>' : '')
+        + '</div>'
+        + '<button class="list-fav favorited" data-fav-type="sermon" data-fav-num="' + s.num + '">&#x2764;</button></div>';
+    } else {
+      var p = null;
+      for (var j = 0; j < manifest.prayers.length; j++) {
+        if (manifest.prayers[j].num === num) { p = manifest.prayers[j]; break; }
+      }
+      if (!p) continue;
+      html += '<div class="list-item" data-type="prayer" data-num="' + p.num + '">'
+        + '<div class="list-num">' + p.num + '</div>'
+        + '<div class="list-body">'
+        + '<div class="list-title">' + escHtml(p.title) + '</div>'
+        + '<div class="list-sub">Prayer</div>'
+        + '</div>'
+        + '<button class="list-fav favorited" data-fav-type="prayer" data-fav-num="' + p.num + '">&#x2764;</button></div>';
+    }
+  }
+  $favList.innerHTML = html;
+}
+
+$favList.addEventListener('click', function(e) {
+  var favBtn = e.target.closest('.list-fav');
+  if (favBtn) {
+    e.stopPropagation();
+    toggleFav(favBtn.dataset.favType, parseInt(favBtn.dataset.favNum), favBtn);
+    renderFavorites();
+    return;
+  }
+  var item = e.target.closest('.list-item');
+  if (!item) return;
+  if (item.dataset.type === 'sermon') openSermon(parseInt(item.dataset.num));
+  else openPrayer(parseInt(item.dataset.num));
+});
+
+/* ========== SEARCH ========== */
+function onSearch() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(doSearch, 200);
+}
+
+function doSearch() {
+  var q = $searchInput.value.trim().toLowerCase();
+  if (q.length < 2) {
+    $searchResults.innerHTML = '<div class="search-hint">Search sermons and prayers by title, sermon number, or scripture reference.</div>';
+    return;
+  }
+
+  var results = [];
+  var numQ = parseInt(q);
+  var isNum = !isNaN(numQ) && String(numQ) === q;
+
+  for (var i = 0; i < manifest.sermons.length && results.length < 100; i++) {
+    var s = manifest.sermons[i];
+    if (
+      s.title.toLowerCase().indexOf(q) !== -1 ||
+      s.scripture.toLowerCase().indexOf(q) !== -1 ||
+      (isNum && s.num === numQ)
+    ) {
+      results.push({ type: 'sermon', item: s });
+    }
+  }
+
+  for (var i = 0; i < manifest.prayers.length; i++) {
+    var p = manifest.prayers[i];
+    if (
+      p.title.toLowerCase().indexOf(q) !== -1 ||
+      (isNum && p.num === numQ)
+    ) {
+      results.push({ type: 'prayer', item: p });
+    }
+  }
+
+  if (results.length === 0) {
+    $searchResults.innerHTML = '<div class="search-hint">No results found for "' + escHtml(q) + '"</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < results.length; i++) {
+    var r = results[i];
+    if (r.type === 'sermon') {
+      html += '<div class="list-item" data-type="sermon" data-num="' + r.item.num + '">'
+        + '<div class="list-num">#' + r.item.num + '</div>'
+        + '<div class="list-body">'
+        + '<div class="list-title">' + escHtml(r.item.title) + '</div>'
+        + (r.item.scripture ? '<div class="list-sub">' + escHtml(r.item.scripture) + '</div>' : '')
+        + '</div></div>';
+    } else {
+      html += '<div class="list-item" data-type="prayer" data-num="' + r.item.num + '">'
+        + '<div class="list-num">' + r.item.num + '</div>'
+        + '<div class="list-body">'
+        + '<div class="list-title">' + escHtml(r.item.title) + '</div>'
+        + '<div class="list-sub">Prayer</div>'
+        + '</div></div>';
+    }
+  }
+  $searchResults.innerHTML = html;
+}
+
+$searchResults.addEventListener('click', function(e) {
+  var item = e.target.closest('.list-item');
+  if (!item) return;
+  if (item.dataset.type === 'sermon') openSermon(parseInt(item.dataset.num));
+  else openPrayer(parseInt(item.dataset.num));
+});
+
+/* ========== AUDIO ========== */
+function checkSermonAudio(file) {
+  // Try MP3 first, fall back to SSML/TTS
+  var mp3url = './data/mp3/' + file + '.mp3';
+  fetch(mp3url, { method: 'HEAD' })
+    .then(function(r) {
+      if (r.ok) {
+        ttsMode = false;
+        setBadge('mp3');
+        $audioEl.src = mp3url;
+        $audioEl.load();
+      } else {
+        throw new Error('No MP3');
+      }
+    })
+    .catch(function() {
+      // No MP3 -- try SSML/TTS
+      if (!ttsAvailable) return;
+      loadSsmlForTts(file);
+    });
+}
+
+function checkPrayerAudio(prayer) {
+  var numStr = String(prayer.num).padStart(2, '0');
+  var mp3url = './data/mp3/' + numStr + '_' + prayer.file.replace(/^\d+/, '') + '.mp3';
+  fetch(mp3url, { method: 'HEAD' })
+    .then(function(r) {
+      if (r.ok) {
+        ttsMode = false;
+        setBadge('mp3');
+        $audioEl.src = mp3url;
+        $audioEl.load();
+      } else {
+        throw new Error('No MP3');
+      }
+    })
+    .catch(function() {
+      // Prayers don't have SSML files, so no fallback
+    });
+}
+
+function setBadge(mode) {
+  $audioBadge.className = '';
+  if (mode === 'mp3') {
+    $audioBadge.textContent = 'MP3';
+    $audioBadge.className = 'mp3';
+  } else if (mode === 'tts') {
+    $audioBadge.textContent = 'LIVE';
+    $audioBadge.className = 'tts';
+  } else {
+    $audioBadge.style.display = 'none';
+  }
+}
+
+/* ========== TTS ========== */
+function loadSsmlForTts(file) {
+  fetch('./data/ssml/' + file + '.ssml')
+    .then(function(r) {
+      if (!r.ok) throw new Error('No SSML');
+      return r.text();
+    })
+    .then(function(ssml) {
+      ttsMode = true;
+      setBadge('tts');
+      // Strip SSML tags to get plain text for TTS engines
+      var plainText = ssmlToPlainText(ssml);
+      // Chunk by paragraphs (split on double newlines or <p> tags)
+      ttsChunks = chunkText(plainText, 3000);
+      ttsChunkIdx = 0;
+      ttsSpeaking = false;
+      ttsPaused = false;
+      // Show the audio bar
+      $audioBar.classList.add('visible');
+      updateTtsProgress();
+    })
+    .catch(function() {
+      // No SSML available either
+    });
+}
+
+function ssmlToPlainText(ssml) {
+  // Remove XML declaration and <speak> wrapper
+  var text = ssml.replace(/<\?xml[^>]*\?>/g, '');
+  // Convert <break> tags to pauses (periods for natural pausing)
+  text = text.replace(/<break[^>]*\/>/g, ' ');
+  // Convert <sub> tags: use alias text
+  text = text.replace(/<sub[^>]*alias="([^"]*)"[^>]*>[^<]*<\/sub>/g, '$1');
+  // Remove all remaining XML/SSML tags
+  text = text.replace(/<[^>]+>/g, '');
+  // Collapse whitespace
+  text = text.replace(/\s+/g, ' ');
+  // Decode basic entities
+  text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+  return text.trim();
+}
+
+function chunkText(text, maxLen) {
+  // Split on sentence boundaries, grouping into chunks under maxLen
+  var sentences = text.split(/(?<=[.!?])\s+/);
+  var chunks = [];
+  var current = '';
+  for (var i = 0; i < sentences.length; i++) {
+    var s = sentences[i];
+    if (current.length + s.length + 1 > maxLen && current.length > 0) {
+      chunks.push(current.trim());
+      current = '';
+    }
+    current += (current ? ' ' : '') + s;
+  }
+  if (current.trim()) chunks.push(current.trim());
+  // Ensure we have at least one chunk
+  if (chunks.length === 0 && text.trim()) chunks.push(text.trim());
+  return chunks;
+}
+
+function updateTtsProgress() {
+  if (ttsChunks.length > 0) {
+    var pct = (ttsChunkIdx / ttsChunks.length) * 100;
+    $audioProgressFill.style.width = pct + '%';
+    $audioTime.textContent = ttsChunkIdx + '/' + ttsChunks.length;
+  }
+}
+
+function speakChunk(idx) {
+  if (idx >= ttsChunks.length) {
+    // Done speaking all chunks
+    ttsSpeaking = false;
+    ttsPaused = false;
+    audioPlaying = false;
+    $audioPlayBtn.innerHTML = '&#9654;';
+    $audioProgressFill.style.width = '100%';
+    $audioTime.textContent = ttsChunks.length + '/' + ttsChunks.length;
+    return;
+  }
+
+  ttsChunkIdx = idx;
+  ttsSpeaking = true;
+  updateTtsProgress();
+
+  if (ttsUseNative) {
+    speakNative(ttsChunks[idx]);
+  } else {
+    speakWeb(ttsChunks[idx]);
+  }
+}
+
+function speakNative(text) {
+  // Capacitor community TTS plugin
+  var TTS = window.Capacitor.Plugins.TextToSpeech;
+  TTS.speak({
+    text: text,
+    lang: 'en-GB',
+    rate: 0.85 * speeds[speedIdx],
+    pitch: 1.0,
+    volume: 1.0,
+    category: 'playback'
+  }).then(function() {
+    // Chunk finished, speak next
+    if (ttsSpeaking && !ttsPaused) {
+      speakChunk(ttsChunkIdx + 1);
+    }
+  }).catch(function(err) {
+    console.error('TTS error:', err);
+    ttsSpeaking = false;
+    audioPlaying = false;
+    $audioPlayBtn.innerHTML = '&#9654;';
+  });
+}
+
+function speakWeb(text) {
+  var utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'en-GB';
+  utter.rate = 0.85 * speeds[speedIdx];
+  utter.pitch = 1.0;
+  utter.volume = 1.0;
+
+  utter.onend = function() {
+    if (ttsSpeaking && !ttsPaused) {
+      speakChunk(ttsChunkIdx + 1);
+    }
+  };
+  utter.onerror = function(e) {
+    if (e.error === 'canceled' || e.error === 'interrupted') return;
+    console.error('Web TTS error:', e);
+    ttsSpeaking = false;
+    audioPlaying = false;
+    $audioPlayBtn.innerHTML = '&#9654;';
+  };
+
+  window.speechSynthesis.speak(utter);
+}
+
+function stopTts() {
+  ttsSpeaking = false;
+  ttsPaused = false;
+  if (ttsUseNative) {
+    try {
+      var TTS = window.Capacitor.Plugins.TextToSpeech;
+      TTS.stop();
+    } catch(e) {}
+  } else {
+    window.speechSynthesis.cancel();
+  }
+}
+
+function toggleAudio() {
+  if (ttsMode) {
+    toggleTtsAudio();
+    return;
+  }
+  if (audioPlaying) {
+    $audioEl.pause();
+    audioPlaying = false;
+    $audioPlayBtn.innerHTML = '&#9654;';
+  } else {
+    $audioEl.play();
+    audioPlaying = true;
+    $audioPlayBtn.innerHTML = '&#x23F8;';
+  }
+}
+
+function toggleTtsAudio() {
+  if (ttsSpeaking && !ttsPaused) {
+    // Pause TTS
+    ttsPaused = true;
+    audioPlaying = false;
+    $audioPlayBtn.innerHTML = '&#9654;';
+    if (ttsUseNative) {
+      try { window.Capacitor.Plugins.TextToSpeech.stop(); } catch(e) {}
+    } else {
+      window.speechSynthesis.cancel();
+    }
+  } else if (ttsPaused) {
+    // Resume from current chunk
+    ttsPaused = false;
+    audioPlaying = true;
+    $audioPlayBtn.innerHTML = '&#x23F8;';
+    speakChunk(ttsChunkIdx);
+  } else {
+    // Start from beginning (or current chunk)
+    audioPlaying = true;
+    $audioPlayBtn.innerHTML = '&#x23F8;';
+    speakChunk(ttsChunkIdx);
+  }
+}
+
+function seekAudio(e) {
+  if (ttsMode) {
+    // Allow seeking by chunk in TTS mode
+    if (ttsChunks.length === 0) return;
+    var rect = $audioProgress.getBoundingClientRect();
+    var pct = (e.clientX - rect.left) / rect.width;
+    var targetChunk = Math.floor(pct * ttsChunks.length);
+    targetChunk = Math.max(0, Math.min(targetChunk, ttsChunks.length - 1));
+    stopTts();
+    ttsChunkIdx = targetChunk;
+    updateTtsProgress();
+    if (audioPlaying) {
+      ttsPaused = false;
+      speakChunk(ttsChunkIdx);
+    }
+    return;
+  }
+  if (!$audioEl.duration) return;
+  var rect = $audioProgress.getBoundingClientRect();
+  var pct = (e.clientX - rect.left) / rect.width;
+  $audioEl.currentTime = pct * $audioEl.duration;
+}
+
+function cycleSpeed() {
+  speedIdx = (speedIdx + 1) % speeds.length;
+  if (!ttsMode) {
+    $audioEl.playbackRate = speeds[speedIdx];
+  }
+  // For TTS, speed is set per-chunk at speak time (native rate param)
+  $audioSpeed.textContent = speeds[speedIdx] + 'x';
+}
+
+function closeAudio() {
+  if (ttsMode) {
+    stopTts();
+    ttsMode = false;
+    ttsChunks = [];
+    ttsChunkIdx = 0;
+  }
+  $audioEl.pause();
+  $audioEl.removeAttribute('src');
+  audioPlaying = false;
+  $audioBar.classList.remove('visible');
+  $audioPlayBtn.innerHTML = '&#9654;';
+  $audioProgressFill.style.width = '0%';
+  $audioTime.textContent = '0:00';
+  setBadge('');
+}
+
+function formatTime(s) {
+  var m = Math.floor(s / 60);
+  var sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+/* ========== UTILITY ========== */
+function escHtml(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+/* ========== START ========== */
+init();
+
+})();
+</script>
+</body>
+</html>
