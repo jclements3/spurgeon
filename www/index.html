@@ -732,6 +732,10 @@ body {
 
 <!-- BOTTOM TAB BAR -->
 <div id="tab-bar">
+  <button class="tab" data-tab="nowplaying" id="tab-nowplaying" style="display:none">
+    <span class="tab-icon">&#x1F3B5;</span>
+    <span class="tab-label">Playing</span>
+  </button>
   <button class="tab active" data-tab="sermons" id="tab-sermons">
     <span class="tab-icon">&#x1F4D6;</span>
     <span class="tab-label">Sermons</span>
@@ -768,6 +772,8 @@ var filteredSermons = [];
 var PAGE_SIZE = 50;
 var currentDetailType = null;
 var currentDetailItem = null;
+var nowPlayingType = null;
+var nowPlayingItem = null;
 var notesVisible = false;
 var speeds = [1.5, 1.75, 2, 1, 1.25];
 var searchTimeout = null;
@@ -1028,6 +1034,10 @@ function wirePlayerPanel(prefix) {
 
 /* ========== TAB SWITCHING ========== */
 function switchTab(tab) {
+  if (tab === 'nowplaying') {
+    returnToNowPlaying();
+    return;
+  }
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
   document.getElementById('tab-' + tab).classList.add('active');
@@ -1041,6 +1051,52 @@ function switchTab(tab) {
     setTimeout(function() { $searchInput.focus(); }, 100);
   }
   history.pushState({ tab: tab }, '', '');
+}
+
+function showNowPlayingTab() {
+  document.getElementById('tab-nowplaying').style.display = '';
+}
+
+function hideNowPlayingTab() {
+  document.getElementById('tab-nowplaying').style.display = 'none';
+}
+
+function returnToNowPlaying() {
+  if (!nowPlayingItem || !nowPlayingType) return;
+  // Navigate to the detail view without restarting audio
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('tab-nowplaying').classList.add('active');
+  $backBtn.style.display = 'flex';
+
+  if (nowPlayingType === 'sermon') {
+    currentTab = 'sermons';
+    currentDetailType = 'sermon';
+    currentDetailItem = nowPlayingItem;
+    var s = nowPlayingItem;
+    document.getElementById('sermon-detail-title').textContent = s.title;
+    document.getElementById('sermon-detail-meta').textContent =
+      'Sermon #' + s.num + (s.scripture ? '  |  ' + s.scripture : '') + '  |  Volume ' + s.volume;
+    var fav = isFavorite('sermon', s.num);
+    document.getElementById('sermon-fav-btn').textContent = fav ? '\u2764' : '\u2661';
+    document.getElementById('sermon-fav-btn').classList.toggle('favorited', fav);
+    showView('view-sermon-detail');
+    $headerTitle.textContent = '#' + s.num;
+    // Show the player panel without resetting audio
+    showPlayerPanel('sp');
+  } else {
+    currentTab = 'prayers';
+    currentDetailType = 'prayer';
+    currentDetailItem = nowPlayingItem;
+    var p = nowPlayingItem;
+    document.getElementById('prayer-detail-title').textContent = p.title;
+    document.getElementById('prayer-detail-meta').textContent = 'Prayer #' + p.num;
+    var fav = isFavorite('prayer', p.num);
+    document.getElementById('prayer-fav-btn').textContent = fav ? '\u2764' : '\u2661';
+    document.getElementById('prayer-fav-btn').classList.toggle('favorited', fav);
+    showView('view-prayer-detail');
+    $headerTitle.textContent = p.title;
+    showPlayerPanel('pp');
+  }
 }
 
 function showView(id) {
@@ -1222,8 +1278,13 @@ function openSermon(num) {
         });
     });
 
-  closeAudio();
-  checkSermonAudio(s.file);
+  // Only set up audio if nothing is currently playing, or if opening the same sermon
+  if (!nowPlayingItem || nowPlayingItem.num === s.num) {
+    checkSermonAudio(s.file);
+  } else {
+    // Something else is playing — just hide this sermon's player
+    hidePlayerPanel('sp');
+  }
 }
 
 function openPrayer(num) {
@@ -1268,8 +1329,11 @@ function openPrayer(num) {
       textEl.textContent = 'Prayer text not available.';
     });
 
-  closeAudio();
-  checkPrayerAudio(p);
+  if (!nowPlayingItem || nowPlayingItem.num === p.num) {
+    checkPrayerAudio(p);
+  } else {
+    hidePlayerPanel('pp');
+  }
 }
 
 function toggleNotes() {
@@ -1299,7 +1363,7 @@ function goBack() {
   $backBtn.style.display = 'none';
   showView('view-' + currentTab);
   updateHeaderTitle();
-  closeAudio();
+  // Don't close audio on back — let it keep playing in background
 }
 
 /* ========== FAVORITES ========== */
@@ -1604,6 +1668,9 @@ $searchResults.addEventListener('click', function(e) {
 function checkSermonAudio(file) {
   var prefix = 'sp';
   activePlayer = prefix;
+  nowPlayingType = 'sermon';
+  nowPlayingItem = currentDetailItem;
+  showNowPlayingTab();
   resetPlayerState(prefix);
   var mp3url = './data/mp3/' + file + '.mp3';
   fetch(mp3url, { method: 'HEAD' })
@@ -1627,6 +1694,9 @@ function checkSermonAudio(file) {
 function checkPrayerAudio(prayer) {
   var prefix = 'pp';
   activePlayer = prefix;
+  nowPlayingType = 'prayer';
+  nowPlayingItem = currentDetailItem;
+  showNowPlayingTab();
   resetPlayerState(prefix);
   var numStr = String(prayer.num).padStart(2, '0');
   var mp3url = './data/mp3/' + numStr + '_' + prayer.file.replace(/^\d+/, '') + '.mp3';
@@ -1853,6 +1923,9 @@ function closeAudio() {
   $audioEl.pause();
   $audioEl.removeAttribute('src');
   activePlayer = null;
+  nowPlayingType = null;
+  nowPlayingItem = null;
+  hideNowPlayingTab();
 }
 
 function formatTime(s) {
