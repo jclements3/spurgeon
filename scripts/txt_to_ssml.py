@@ -545,6 +545,26 @@ def convert_text_to_ssml(text):
     """
     title, sermon_number, body = parse_title_and_body(text)
 
+    # Fix ALL CAPS leading words (e.g., "IT has been" -> "It has been")
+    # Spurgeon PDFs capitalize the first word of paragraphs/sections
+    body = re.sub(
+        r'(?m)^([A-Z]{2,})(\s)',
+        lambda m: m.group(1).capitalize() + m.group(2),
+        body,
+    )
+    # Also fix ALL CAPS words mid-sentence that are clearly stylistic,
+    # but preserve intentional all-caps (like "LORD", "GOD", short acronyms)
+    _KEEP_UPPER = {
+        "LORD", "GOD", "JEHOVAH", "CHRIST", "JESUS", "HOLY", "KING",
+        "AMEN", "HALLELUJAH", "SELAH", "I", "II", "III", "IV", "V",
+    }
+    def _fix_caps_word(m):
+        word = m.group(1)
+        if word in _KEEP_UPPER or len(word) <= 1:
+            return m.group(0)
+        return word.capitalize() + m.group(2)
+    body = re.sub(r'\b([A-Z]{2,})\b(\s)', _fix_caps_word, body)
+
     # XML-escape before adding any SSML
     title = escape_xml(title)
     body = escape_xml(body)

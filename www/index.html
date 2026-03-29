@@ -360,84 +360,129 @@ body {
   letter-spacing: 0.1em;
 }
 
-/* ===== AUDIO PLAYER ===== */
-#audio-bar {
-  display: none;
-  background: var(--ink);
-  color: var(--parchment);
-  padding: 0.5rem 1rem;
+/* ===== AUDIO PLAYER (inline in detail header) ===== */
+.detail-title-row {
+  display: flex;
   align-items: center;
   gap: 0.6rem;
-  flex-shrink: 0;
-  min-height: 48px;
 }
-#audio-bar.visible { display: flex; }
-#audio-bar button {
+.detail-title-row .detail-title {
+  flex: 1;
+  min-width: 0;
+}
+.player-panel {
+  display: none;
+}
+.player-panel.visible { display: block; }
+.player-transport {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+.player-transport button {
   background: none;
   border: none;
-  color: var(--gold-light);
-  font-size: 1.2rem;
+  color: var(--gold);
+  font-size: 0.9rem;
   cursor: pointer;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 32px;
+  min-height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-#audio-progress {
-  flex: 1;
-  height: 4px;
-  background: rgba(255,255,255,0.15);
-  position: relative;
-  cursor: pointer;
-  border-radius: 2px;
-}
-#audio-progress-fill {
-  height: 100%;
-  background: var(--gold-light);
-  border-radius: 2px;
-  width: 0%;
-  transition: width 0.3s linear;
-}
-#audio-time {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.6rem;
-  color: var(--faded);
-  min-width: 3rem;
-  text-align: right;
-}
-#audio-speed {
-  background: none;
-  border: 1px solid var(--gold);
-  color: var(--gold-light);
-  font-family: 'Space Mono', monospace;
-  font-size: 0.6rem;
-  padding: 0.2rem 0.4rem;
-  cursor: pointer;
-  min-width: 36px;
-  min-height: 32px;
-}
-#audio-badge {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.55rem;
-  letter-spacing: 0.08em;
-  padding: 0.15rem 0.4rem;
-  border-radius: 2px;
-  text-transform: uppercase;
+  border-radius: 50%;
+  padding: 0;
   flex-shrink: 0;
-  display: none;
 }
-#audio-badge.mp3 {
-  display: inline-block;
+.player-transport button:active {
+  background: rgba(139,105,20,0.15);
+}
+.player-transport .play-btn {
+  font-size: 1rem;
+  min-width: 36px;
+  min-height: 36px;
   background: var(--gold);
   color: var(--white);
+  border-radius: 50%;
 }
-#audio-badge.tts {
-  display: inline-block;
-  background: var(--terracotta);
-  color: var(--parchment);
+.player-transport .play-btn:active {
+  background: var(--gold-light);
 }
-
+.player-speed {
+  background: none;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  padding: 0.1rem 0.35rem;
+  cursor: pointer;
+  min-height: 24px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.player-seek-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+.player-seek {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(139,105,20,0.2);
+  border-radius: 2px;
+  outline: none;
+  min-width: 60px;
+}
+.player-seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+}
+.player-time {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--faded);
+  min-width: 2.2rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+.player-vol-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.6rem;
+  flex-shrink: 0;
+}
+.player-vol {
+  width: 60px;
+  height: 3px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(139,105,20,0.2);
+  border-radius: 2px;
+  outline: none;
+}
+.player-vol::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+}
+.vol-icon {
+  color: var(--gold);
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}
+.player-badge { display: none; }
 /* ===== BOTTOM TAB BAR ===== */
 #tab-bar {
   background: var(--ink);
@@ -517,18 +562,42 @@ body {
   <!-- SERMON DETAIL -->
   <div id="view-sermon-detail" class="view">
     <div class="detail-header">
-      <div class="detail-title" id="sermon-detail-title"></div>
+      <div class="detail-title-row">
+        <div class="detail-title" id="sermon-detail-title"></div>
+        <div class="player-panel" id="sermon-player">
+          <div class="player-transport">
+            <button id="sp-restart" title="Restart">&#9198;</button>
+            <button id="sp-back15" title="Back 15s">&#x23EA;</button>
+            <button class="play-btn" id="sp-play" title="Play">&#9654;</button>
+            <button id="sp-fwd15" title="Forward 15s">&#x23E9;</button>
+            <button class="player-speed" id="sp-speed">1.5x</button>
+          </div>
+          <span class="player-badge" id="sp-badge" style="display:none"></span>
+        </div>
+      </div>
       <div class="detail-meta" id="sermon-detail-meta"></div>
+      <div class="player-panel player-seek-section" id="sermon-player-seek" style="display:none">
+        <div class="player-seek-row">
+          <span class="player-time" id="sp-time-cur">0:00</span>
+          <input type="range" id="sp-slider" class="player-seek" min="0" max="100" value="0">
+          <span class="player-time" id="sp-time-end">0:00</span>
+          <div class="player-vol-wrap">
+            <span class="vol-icon">&#x1F509;</span>
+            <input type="range" id="sp-volume" class="player-vol" min="0" max="100" value="80">
+            <span class="vol-icon">&#x1F50A;</span>
+          </div>
+        </div>
+      </div>
       <div class="detail-actions">
         <button class="detail-btn" id="notes-toggle">Speaker Notes</button>
         <button class="detail-btn" id="sermon-fav-btn"></button>
       </div>
     </div>
-    <div class="detail-text loading" id="sermon-detail-text">Loading sermon...</div>
     <div class="notes-section" id="notes-section" style="display:none">
       <h3>Speaker Notes</h3>
       <div class="notes-text" id="notes-text"></div>
     </div>
+    <div class="detail-text loading" id="sermon-detail-text">Loading sermon...</div>
   </div>
 
   <!-- PRAYERS LIST -->
@@ -539,8 +608,32 @@ body {
   <!-- PRAYER DETAIL -->
   <div id="view-prayer-detail" class="view">
     <div class="detail-header">
-      <div class="detail-title" id="prayer-detail-title"></div>
+      <div class="detail-title-row">
+        <div class="detail-title" id="prayer-detail-title"></div>
+        <div class="player-panel" id="prayer-player">
+          <div class="player-transport">
+            <button id="pp-restart" title="Restart">&#9198;</button>
+            <button id="pp-back15" title="Back 15s">&#x23EA;</button>
+            <button class="play-btn" id="pp-play" title="Play">&#9654;</button>
+            <button id="pp-fwd15" title="Forward 15s">&#x23E9;</button>
+            <button class="player-speed" id="pp-speed">1.5x</button>
+          </div>
+          <span class="player-badge" id="pp-badge" style="display:none"></span>
+        </div>
+      </div>
       <div class="detail-meta" id="prayer-detail-meta"></div>
+      <div class="player-panel player-seek-section" id="prayer-player-seek" style="display:none">
+        <div class="player-seek-row">
+          <span class="player-time" id="pp-time-cur">0:00</span>
+          <input type="range" id="pp-slider" class="player-seek" min="0" max="100" value="0">
+          <span class="player-time" id="pp-time-end">0:00</span>
+          <div class="player-vol-wrap">
+            <span class="vol-icon">&#x1F509;</span>
+            <input type="range" id="pp-volume" class="player-vol" min="0" max="100" value="80">
+            <span class="vol-icon">&#x1F50A;</span>
+          </div>
+        </div>
+      </div>
       <div class="detail-actions">
         <button class="detail-btn" id="prayer-fav-btn"></button>
       </div>
@@ -565,17 +658,8 @@ body {
 
 </div>
 
-<!-- AUDIO PLAYER -->
-<div id="audio-bar">
-  <button id="audio-play-btn" aria-label="Play/Pause">&#9654;</button>
-  <span id="audio-badge"></span>
-  <div id="audio-progress">
-    <div id="audio-progress-fill"></div>
-  </div>
-  <span id="audio-time">0:00</span>
-  <button id="audio-speed">1x</button>
-  <button id="audio-close-btn" aria-label="Close audio">&#x2715;</button>
-</div>
+<!-- hidden audio element for MP3 playback -->
+<audio id="audio-el" style="display:none"></audio>
 
 <!-- BOTTOM TAB BAR -->
 <div id="tab-bar">
@@ -597,8 +681,6 @@ body {
   </button>
 </div>
 
-<audio id="audio-el" preload="none"></audio>
-
 <script>
 (function() {
 'use strict';
@@ -614,17 +696,10 @@ var PAGE_SIZE = 50;
 var currentDetailType = null;
 var currentDetailItem = null;
 var notesVisible = false;
-var audioPlaying = false;
-var speeds = [1, 1.25, 1.5, 1.75, 2, 0.75];
-var speedIdx = 0;
+var speeds = [1.5, 1.75, 2, 1, 1.25];
 var searchTimeout = null;
 
 /* ========== TTS STATE ========== */
-var ttsMode = false;       // true when using TTS instead of MP3
-var ttsChunks = [];        // array of text chunks to speak
-var ttsChunkIdx = 0;       // current chunk being spoken
-var ttsSpeaking = false;   // is TTS currently speaking?
-var ttsPaused = false;     // is TTS paused?
 var ttsAvailable = false;  // can we use TTS on this platform?
 var ttsUseNative = false;  // use Capacitor plugin (Android) vs Web Speech API
 
@@ -651,13 +726,75 @@ var $favList = document.getElementById('fav-list');
 var $searchInput = document.getElementById('search-input');
 var $searchResults = document.getElementById('search-results');
 var $audioEl = document.getElementById('audio-el');
-var $audioBar = document.getElementById('audio-bar');
-var $audioPlayBtn = document.getElementById('audio-play-btn');
-var $audioProgress = document.getElementById('audio-progress');
-var $audioProgressFill = document.getElementById('audio-progress-fill');
-var $audioTime = document.getElementById('audio-time');
-var $audioSpeed = document.getElementById('audio-speed');
-var $audioBadge = document.getElementById('audio-badge');
+
+/* ========== PLAYER CONTEXT ========== */
+// Tracks which player is active: 'sp' or 'pp' (or null)
+var activePlayer = null;
+// Per-player TTS state
+var playerState = {
+  sp: { ttsMode: false, ttsChunks: [], ttsChunkIdx: 0, ttsSpeaking: false, ttsPaused: false, playing: false, speedIdx: 0 },
+  pp: { ttsMode: false, ttsChunks: [], ttsChunkIdx: 0, ttsSpeaking: false, ttsPaused: false, playing: false, speedIdx: 0 }
+};
+
+function getPlayerEls(prefix) {
+  return {
+    panel: document.getElementById(prefix === 'sp' ? 'sermon-player' : 'prayer-player'),
+    seekPanel: document.getElementById(prefix === 'sp' ? 'sermon-player-seek' : 'prayer-player-seek'),
+    restart: document.getElementById(prefix + '-restart'),
+    back15: document.getElementById(prefix + '-back15'),
+    play: document.getElementById(prefix + '-play'),
+    fwd15: document.getElementById(prefix + '-fwd15'),
+    slider: document.getElementById(prefix + '-slider'),
+    timeCur: document.getElementById(prefix + '-time-cur'),
+    timeEnd: document.getElementById(prefix + '-time-end'),
+    badge: document.getElementById(prefix + '-badge'),
+    speed: document.getElementById(prefix + '-speed'),
+    volume: document.getElementById(prefix + '-volume')
+  };
+}
+
+function showPlayerPanel(prefix) {
+  var els = getPlayerEls(prefix);
+  els.panel.classList.add('visible');
+  els.seekPanel.style.display = 'block';
+}
+
+function hidePlayerPanel(prefix) {
+  var els = getPlayerEls(prefix);
+  els.panel.classList.remove('visible');
+  els.seekPanel.style.display = 'none';
+}
+
+function resetPlayerState(prefix) {
+  var st = playerState[prefix];
+  st.ttsMode = false;
+  st.ttsChunks = [];
+  st.ttsChunkIdx = 0;
+  st.ttsSpeaking = false;
+  st.ttsPaused = false;
+  st.playing = false;
+  st.speedIdx = 0;
+  var els = getPlayerEls(prefix);
+  els.play.innerHTML = '&#9654;';
+  els.slider.value = 0;
+  els.timeCur.textContent = '0:00';
+  els.timeEnd.textContent = '0:00';
+  els.speed.textContent = speeds[0] + 'x';
+  els.badge.className = 'player-badge';
+  els.badge.textContent = '';
+}
+
+function setPlayerBadge(prefix, mode) {
+  var els = getPlayerEls(prefix);
+  els.badge.className = 'player-badge';
+  if (mode === 'mp3') {
+    els.badge.textContent = 'MP3';
+    els.badge.classList.add('mp3');
+  } else if (mode === 'tts') {
+    els.badge.textContent = 'LIVE';
+    els.badge.classList.add('tts');
+  }
+}
 
 /* ========== INIT ========== */
 function init() {
@@ -680,28 +817,41 @@ function init() {
   document.getElementById('notes-toggle').addEventListener('click', toggleNotes);
   document.getElementById('sermon-fav-btn').addEventListener('click', toggleFavDetail);
   document.getElementById('prayer-fav-btn').addEventListener('click', toggleFavDetail);
-  $audioPlayBtn.addEventListener('click', toggleAudio);
-  $audioProgress.addEventListener('click', seekAudio);
-  $audioSpeed.addEventListener('click', cycleSpeed);
-  document.getElementById('audio-close-btn').addEventListener('click', closeAudio);
+
+  // Wire up both player panels
+  wirePlayerPanel('sp');
+  wirePlayerPanel('pp');
+
+  // Audio element events
+  $audioEl.addEventListener('loadedmetadata', function() {
+    if (!activePlayer) return;
+    var els = getPlayerEls(activePlayer);
+    els.timeEnd.textContent = formatTime($audioEl.duration);
+    els.slider.max = Math.floor($audioEl.duration);
+    showPlayerPanel(activePlayer);
+  });
+  $audioEl.addEventListener('error', function() {
+    if (activePlayer) hidePlayerPanel(activePlayer);
+  });
+  $audioEl.addEventListener('timeupdate', function() {
+    if (!activePlayer || playerState[activePlayer].ttsMode) return;
+    if ($audioEl.duration) {
+      var els = getPlayerEls(activePlayer);
+      els.slider.value = Math.floor($audioEl.currentTime);
+      els.timeCur.textContent = formatTime($audioEl.currentTime);
+    }
+  });
+  $audioEl.addEventListener('ended', function() {
+    if (!activePlayer) return;
+    var st = playerState[activePlayer];
+    st.playing = false;
+    var els = getPlayerEls(activePlayer);
+    els.play.innerHTML = '&#9654;';
+  });
 
   // Tab bar
   document.querySelectorAll('.tab').forEach(function(btn) {
     btn.addEventListener('click', function() { switchTab(this.dataset.tab); });
-  });
-
-  // Audio events
-  $audioEl.addEventListener('loadedmetadata', function() { $audioBar.classList.add('visible'); });
-  $audioEl.addEventListener('error', function() { $audioBar.classList.remove('visible'); });
-  $audioEl.addEventListener('timeupdate', function() {
-    if ($audioEl.duration) {
-      $audioProgressFill.style.width = ($audioEl.currentTime / $audioEl.duration * 100) + '%';
-      $audioTime.textContent = formatTime($audioEl.currentTime);
-    }
-  });
-  $audioEl.addEventListener('ended', function() {
-    audioPlaying = false;
-    $audioPlayBtn.innerHTML = '&#9654;';
   });
 
   // History
@@ -711,6 +861,96 @@ function init() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(function() {});
   }
+}
+
+function wirePlayerPanel(prefix) {
+  var els = getPlayerEls(prefix);
+
+  els.play.addEventListener('click', function() {
+    activePlayer = prefix;
+    togglePlayerAudio(prefix);
+  });
+
+  els.restart.addEventListener('click', function() {
+    activePlayer = prefix;
+    var st = playerState[prefix];
+    if (st.ttsMode) {
+      stopTts(prefix);
+      st.ttsChunkIdx = 0;
+      updateTtsProgress(prefix);
+      if (st.playing) { st.ttsPaused = false; speakChunk(prefix, 0); }
+    } else {
+      $audioEl.currentTime = 0;
+    }
+  });
+
+  els.back15.addEventListener('click', function() {
+    activePlayer = prefix;
+    var st = playerState[prefix];
+    if (st.ttsMode) {
+      // Move to previous chunk
+      if (st.ttsChunkIdx > 0) {
+        stopTts(prefix);
+        st.ttsChunkIdx--;
+        updateTtsProgress(prefix);
+        if (st.playing) { st.ttsPaused = false; speakChunk(prefix, st.ttsChunkIdx); }
+      }
+    } else {
+      $audioEl.currentTime = Math.max(0, $audioEl.currentTime - 15);
+    }
+  });
+
+  els.fwd15.addEventListener('click', function() {
+    activePlayer = prefix;
+    var st = playerState[prefix];
+    if (st.ttsMode) {
+      // Move to next chunk
+      if (st.ttsChunkIdx < st.ttsChunks.length - 1) {
+        stopTts(prefix);
+        st.ttsChunkIdx++;
+        updateTtsProgress(prefix);
+        if (st.playing) { st.ttsPaused = false; speakChunk(prefix, st.ttsChunkIdx); }
+      }
+    } else {
+      $audioEl.currentTime = Math.min($audioEl.duration || 0, $audioEl.currentTime + 15);
+    }
+  });
+
+  els.slider.addEventListener('input', function() {
+    activePlayer = prefix;
+    var st = playerState[prefix];
+    if (st.ttsMode) {
+      if (st.ttsChunks.length === 0) return;
+      var targetChunk = Math.round(parseFloat(els.slider.value));
+      targetChunk = Math.max(0, Math.min(targetChunk, st.ttsChunks.length - 1));
+      stopTts(prefix);
+      st.ttsChunkIdx = targetChunk;
+      updateTtsProgress(prefix);
+      if (st.playing) { st.ttsPaused = false; speakChunk(prefix, st.ttsChunkIdx); }
+    } else {
+      $audioEl.currentTime = parseFloat(els.slider.value);
+    }
+  });
+
+  els.speed.addEventListener('click', function() {
+    activePlayer = prefix;
+    var st = playerState[prefix];
+    st.speedIdx = (st.speedIdx + 1) % speeds.length;
+    if (!st.ttsMode) {
+      $audioEl.playbackRate = speeds[st.speedIdx];
+    } else {
+      // TTS: new speed applies to next chunk automatically
+    }
+    els.speed.textContent = speeds[st.speedIdx] + 'x';
+  });
+
+  els.volume.addEventListener('input', function() {
+    activePlayer = prefix;
+    var st = playerState[prefix];
+    if (!st.ttsMode) {
+      $audioEl.volume = parseFloat(els.volume.value) / 100;
+    }
+  });
 }
 
 /* ========== TAB SWITCHING ========== */
@@ -891,7 +1131,9 @@ function openSermon(num) {
     })
     .then(function(text) {
       textEl.className = 'detail-text';
-      textEl.textContent = text;
+      // Skip first 3 lines (title, number, blank) to avoid repeating header info
+      var lines = text.split('\n');
+      textEl.textContent = lines.slice(3).join('\n');
     })
     .catch(function() {
       textEl.className = 'detail-text';
@@ -935,11 +1177,13 @@ function openPrayer(num) {
     })
     .then(function(text) {
       textEl.className = 'detail-text';
-      textEl.textContent = text;
+      // Skip first 2 lines (title, blank) — prayers don't have a sermon number line
+      var lines = text.split('\n');
+      textEl.textContent = lines.slice(2).join('\n');
     })
     .catch(function() {
       textEl.className = 'detail-text';
-      textEl.textContent = 'Prayer text not available. Ensure files are symlinked or copied to www/data/prayers/.';
+      textEl.textContent = 'Prayer text not available.';
     });
 
   closeAudio();
@@ -947,6 +1191,7 @@ function openPrayer(num) {
 }
 
 function toggleNotes() {
+  console.log('toggleNotes called, currentDetailItem:', currentDetailItem ? currentDetailItem.file : 'null');
   if (!currentDetailItem) return;
   notesVisible = !notesVisible;
   document.getElementById('notes-toggle').classList.toggle('on', notesVisible);
@@ -1142,78 +1387,71 @@ $searchResults.addEventListener('click', function(e) {
 
 /* ========== AUDIO ========== */
 function checkSermonAudio(file) {
-  // Try MP3 first, fall back to SSML/TTS
+  var prefix = 'sp';
+  activePlayer = prefix;
+  resetPlayerState(prefix);
   var mp3url = './data/mp3/' + file + '.mp3';
   fetch(mp3url, { method: 'HEAD' })
     .then(function(r) {
       if (r.ok) {
-        ttsMode = false;
-        setBadge('mp3');
+        playerState[prefix].ttsMode = false;
+        setPlayerBadge(prefix, 'mp3');
         $audioEl.src = mp3url;
         $audioEl.load();
+        showPlayerPanel(prefix);
       } else {
         throw new Error('No MP3');
       }
     })
     .catch(function() {
-      // No MP3 -- try SSML/TTS
       if (!ttsAvailable) return;
-      loadSsmlForTts(file);
+      loadSsmlForTts(file, prefix, './data/ssml/');
     });
 }
 
 function checkPrayerAudio(prayer) {
+  var prefix = 'pp';
+  activePlayer = prefix;
+  resetPlayerState(prefix);
   var numStr = String(prayer.num).padStart(2, '0');
   var mp3url = './data/mp3/' + numStr + '_' + prayer.file.replace(/^\d+/, '') + '.mp3';
   fetch(mp3url, { method: 'HEAD' })
     .then(function(r) {
       if (r.ok) {
-        ttsMode = false;
-        setBadge('mp3');
+        playerState[prefix].ttsMode = false;
+        setPlayerBadge(prefix, 'mp3');
         $audioEl.src = mp3url;
         $audioEl.load();
+        showPlayerPanel(prefix);
       } else {
         throw new Error('No MP3');
       }
     })
     .catch(function() {
-      // Prayers don't have SSML files, so no fallback
+      if (!ttsAvailable) return;
+      var ssmlFile = String(prayer.num).padStart(2, '0') + '_' + prayer.file.replace(/^\d+/, '');
+      loadSsmlForTts(ssmlFile, prefix, './data/prayers_ssml/');
     });
 }
 
-function setBadge(mode) {
-  $audioBadge.className = '';
-  if (mode === 'mp3') {
-    $audioBadge.textContent = 'MP3';
-    $audioBadge.className = 'mp3';
-  } else if (mode === 'tts') {
-    $audioBadge.textContent = 'LIVE';
-    $audioBadge.className = 'tts';
-  } else {
-    $audioBadge.style.display = 'none';
-  }
-}
-
 /* ========== TTS ========== */
-function loadSsmlForTts(file) {
-  fetch('./data/ssml/' + file + '.ssml')
+function loadSsmlForTts(file, prefix, ssmlDir) {
+  fetch(ssmlDir + file + '.ssml')
     .then(function(r) {
       if (!r.ok) throw new Error('No SSML');
       return r.text();
     })
     .then(function(ssml) {
-      ttsMode = true;
-      setBadge('tts');
-      // Strip SSML tags to get plain text for TTS engines
+      var st = playerState[prefix];
+      st.ttsMode = true;
+      setPlayerBadge(prefix, 'tts');
       var plainText = ssmlToPlainText(ssml);
-      // Chunk by paragraphs (split on double newlines or <p> tags)
-      ttsChunks = chunkText(plainText, 3000);
-      ttsChunkIdx = 0;
-      ttsSpeaking = false;
-      ttsPaused = false;
-      // Show the audio bar
-      $audioBar.classList.add('visible');
-      updateTtsProgress();
+      st.ttsChunks = chunkText(plainText, 3000);
+      st.ttsChunkIdx = 0;
+      st.ttsSpeaking = false;
+      st.ttsPaused = false;
+      showPlayerPanel(prefix);
+      updateTtsProgress(prefix);
     })
     .catch(function() {
       // No SSML available either
@@ -1255,86 +1493,92 @@ function chunkText(text, maxLen) {
   return chunks;
 }
 
-function updateTtsProgress() {
-  if (ttsChunks.length > 0) {
-    var pct = (ttsChunkIdx / ttsChunks.length) * 100;
-    $audioProgressFill.style.width = pct + '%';
-    $audioTime.textContent = ttsChunkIdx + '/' + ttsChunks.length;
+function updateTtsProgress(prefix) {
+  var st = playerState[prefix];
+  var els = getPlayerEls(prefix);
+  if (st.ttsChunks.length > 0) {
+    els.slider.max = st.ttsChunks.length - 1;
+    els.slider.value = st.ttsChunkIdx;
+    els.timeCur.textContent = (st.ttsChunkIdx + 1) + '/' + st.ttsChunks.length;
+    els.timeEnd.textContent = st.ttsChunks.length + ' chunks';
   }
 }
 
-function speakChunk(idx) {
-  if (idx >= ttsChunks.length) {
-    // Done speaking all chunks
-    ttsSpeaking = false;
-    ttsPaused = false;
-    audioPlaying = false;
-    $audioPlayBtn.innerHTML = '&#9654;';
-    $audioProgressFill.style.width = '100%';
-    $audioTime.textContent = ttsChunks.length + '/' + ttsChunks.length;
+function speakChunk(prefix, idx) {
+  var st = playerState[prefix];
+  if (idx >= st.ttsChunks.length) {
+    st.ttsSpeaking = false;
+    st.ttsPaused = false;
+    st.playing = false;
+    var els = getPlayerEls(prefix);
+    els.play.innerHTML = '&#9654;';
+    els.slider.value = st.ttsChunks.length - 1;
+    els.timeCur.textContent = st.ttsChunks.length + '/' + st.ttsChunks.length;
     return;
   }
-
-  ttsChunkIdx = idx;
-  ttsSpeaking = true;
-  updateTtsProgress();
+  st.ttsChunkIdx = idx;
+  st.ttsSpeaking = true;
+  updateTtsProgress(prefix);
 
   if (ttsUseNative) {
-    speakNative(ttsChunks[idx]);
+    speakNative(prefix, st.ttsChunks[idx]);
   } else {
-    speakWeb(ttsChunks[idx]);
+    speakWeb(prefix, st.ttsChunks[idx]);
   }
 }
 
-function speakNative(text) {
-  // Capacitor community TTS plugin
+function speakNative(prefix, text) {
+  var st = playerState[prefix];
+  var els = getPlayerEls(prefix);
   var TTS = window.Capacitor.Plugins.TextToSpeech;
   TTS.speak({
     text: text,
     lang: 'en-GB',
-    rate: 0.85 * speeds[speedIdx],
+    rate: 0.85 * speeds[st.speedIdx],
     pitch: 1.0,
     volume: 1.0,
     category: 'playback'
   }).then(function() {
-    // Chunk finished, speak next
-    if (ttsSpeaking && !ttsPaused) {
-      speakChunk(ttsChunkIdx + 1);
+    if (st.ttsSpeaking && !st.ttsPaused) {
+      speakChunk(prefix, st.ttsChunkIdx + 1);
     }
   }).catch(function(err) {
     console.error('TTS error:', err);
-    ttsSpeaking = false;
-    audioPlaying = false;
-    $audioPlayBtn.innerHTML = '&#9654;';
+    st.ttsSpeaking = false;
+    st.playing = false;
+    els.play.innerHTML = '&#9654;';
   });
 }
 
-function speakWeb(text) {
+function speakWeb(prefix, text) {
+  var st = playerState[prefix];
+  var els = getPlayerEls(prefix);
   var utter = new SpeechSynthesisUtterance(text);
   utter.lang = 'en-GB';
-  utter.rate = 0.85 * speeds[speedIdx];
+  utter.rate = 0.85 * speeds[st.speedIdx];
   utter.pitch = 1.0;
   utter.volume = 1.0;
 
   utter.onend = function() {
-    if (ttsSpeaking && !ttsPaused) {
-      speakChunk(ttsChunkIdx + 1);
+    if (st.ttsSpeaking && !st.ttsPaused) {
+      speakChunk(prefix, st.ttsChunkIdx + 1);
     }
   };
   utter.onerror = function(e) {
     if (e.error === 'canceled' || e.error === 'interrupted') return;
     console.error('Web TTS error:', e);
-    ttsSpeaking = false;
-    audioPlaying = false;
-    $audioPlayBtn.innerHTML = '&#9654;';
+    st.ttsSpeaking = false;
+    st.playing = false;
+    els.play.innerHTML = '&#9654;';
   };
 
   window.speechSynthesis.speak(utter);
 }
 
-function stopTts() {
-  ttsSpeaking = false;
-  ttsPaused = false;
+function stopTts(prefix) {
+  var st = playerState[prefix];
+  st.ttsSpeaking = false;
+  st.ttsPaused = false;
   if (ttsUseNative) {
     try {
       var TTS = window.Capacitor.Plugins.TextToSpeech;
@@ -1345,94 +1589,55 @@ function stopTts() {
   }
 }
 
-function toggleAudio() {
-  if (ttsMode) {
-    toggleTtsAudio();
-    return;
-  }
-  if (audioPlaying) {
-    $audioEl.pause();
-    audioPlaying = false;
-    $audioPlayBtn.innerHTML = '&#9654;';
-  } else {
-    $audioEl.play();
-    audioPlaying = true;
-    $audioPlayBtn.innerHTML = '&#x23F8;';
-  }
-}
+function togglePlayerAudio(prefix) {
+  var st = playerState[prefix];
+  var els = getPlayerEls(prefix);
 
-function toggleTtsAudio() {
-  if (ttsSpeaking && !ttsPaused) {
-    // Pause TTS
-    ttsPaused = true;
-    audioPlaying = false;
-    $audioPlayBtn.innerHTML = '&#9654;';
-    if (ttsUseNative) {
-      try { window.Capacitor.Plugins.TextToSpeech.stop(); } catch(e) {}
+  if (st.ttsMode) {
+    if (st.ttsSpeaking && !st.ttsPaused) {
+      st.ttsPaused = true;
+      st.playing = false;
+      els.play.innerHTML = '&#9654;';
+      if (ttsUseNative) {
+        try { window.Capacitor.Plugins.TextToSpeech.stop(); } catch(e) {}
+      } else {
+        window.speechSynthesis.cancel();
+      }
+    } else if (st.ttsPaused) {
+      st.ttsPaused = false;
+      st.playing = true;
+      els.play.innerHTML = '&#x23F8;';
+      speakChunk(prefix, st.ttsChunkIdx);
     } else {
-      window.speechSynthesis.cancel();
+      st.playing = true;
+      els.play.innerHTML = '&#x23F8;';
+      speakChunk(prefix, st.ttsChunkIdx);
     }
-  } else if (ttsPaused) {
-    // Resume from current chunk
-    ttsPaused = false;
-    audioPlaying = true;
-    $audioPlayBtn.innerHTML = '&#x23F8;';
-    speakChunk(ttsChunkIdx);
   } else {
-    // Start from beginning (or current chunk)
-    audioPlaying = true;
-    $audioPlayBtn.innerHTML = '&#x23F8;';
-    speakChunk(ttsChunkIdx);
-  }
-}
-
-function seekAudio(e) {
-  if (ttsMode) {
-    // Allow seeking by chunk in TTS mode
-    if (ttsChunks.length === 0) return;
-    var rect = $audioProgress.getBoundingClientRect();
-    var pct = (e.clientX - rect.left) / rect.width;
-    var targetChunk = Math.floor(pct * ttsChunks.length);
-    targetChunk = Math.max(0, Math.min(targetChunk, ttsChunks.length - 1));
-    stopTts();
-    ttsChunkIdx = targetChunk;
-    updateTtsProgress();
-    if (audioPlaying) {
-      ttsPaused = false;
-      speakChunk(ttsChunkIdx);
+    if (st.playing) {
+      $audioEl.pause();
+      st.playing = false;
+      els.play.innerHTML = '&#9654;';
+    } else {
+      $audioEl.play();
+      st.playing = true;
+      els.play.innerHTML = '&#x23F8;';
     }
-    return;
   }
-  if (!$audioEl.duration) return;
-  var rect = $audioProgress.getBoundingClientRect();
-  var pct = (e.clientX - rect.left) / rect.width;
-  $audioEl.currentTime = pct * $audioEl.duration;
-}
-
-function cycleSpeed() {
-  speedIdx = (speedIdx + 1) % speeds.length;
-  if (!ttsMode) {
-    $audioEl.playbackRate = speeds[speedIdx];
-  }
-  // For TTS, speed is set per-chunk at speak time (native rate param)
-  $audioSpeed.textContent = speeds[speedIdx] + 'x';
 }
 
 function closeAudio() {
-  if (ttsMode) {
-    stopTts();
-    ttsMode = false;
-    ttsChunks = [];
-    ttsChunkIdx = 0;
-  }
+  ['sp', 'pp'].forEach(function(prefix) {
+    var st = playerState[prefix];
+    if (st.ttsMode) {
+      stopTts(prefix);
+    }
+    resetPlayerState(prefix);
+    hidePlayerPanel(prefix);
+  });
   $audioEl.pause();
   $audioEl.removeAttribute('src');
-  audioPlaying = false;
-  $audioBar.classList.remove('visible');
-  $audioPlayBtn.innerHTML = '&#9654;';
-  $audioProgressFill.style.width = '0%';
-  $audioTime.textContent = '0:00';
-  setBadge('');
+  activePlayer = null;
 }
 
 function formatTime(s) {
