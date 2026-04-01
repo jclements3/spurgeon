@@ -1,0 +1,47 @@
+[
+  {
+    "id": "jay_smith_islam_apologetics",
+    "title": "Engaging Muslims: Defending Jesus and the Bible",
+    "speaker": "Jay Smith",
+    "location": "San Jose, CA",
+    "file": "jay_smith_islam_apologetics.html",
+    "tags": ["apologetics", "islam", "jesus", "bible"]
+  },
+  {
+    "id": "jay_smith_historical_critique_mecca",
+    "title": "Historical Critique of Islam's Origins: The Problem with Mecca",
+    "speaker": "Jay Smith",
+    "location": "Calvary Chapel Chino Hills",
+    "file": "jay_smith_historical_critique_mecca.html",
+    "tags": ["apologetics", "islam", "mecca", "history"]
+  },
+  {
+    "id": "jay_smith_quran_historical_critique",
+    "title": "FAQs: Defending Jesus & Confronting the Quran",
+    "speaker": "Jay Smith",
+    "location": "Calvary Chapel (Evening Session)",
+    "file": "jay_smith_quran_historical_critique.html",
+    "tags": ["apologetics", "islam", "quran", "jesus", "crucifixion"]
+  },
+  {
+    "id": "jay_smith_women_kingdom_violence",
+    "title": "Women in Islam, the Kingdom of God vs. the Caliphate, and Islamic Violence",
+    "speaker": "Jay Smith",
+    "file": "jay_smith_women_kingdom_violence.html",
+    "tags": ["apologetics", "islam", "women", "caliphate", "violence"]
+  },
+  {
+    "id": "jay_smith_quran_manuscripts",
+    "title": "The Quran's Manuscript Crisis: From 700 Variants to One Book",
+    "speaker": "Jay Smith",
+    "file": "jay_smith_quran_manuscripts.html",
+    "tags": ["apologetics", "islam", "quran", "manuscripts", "textual-criticism"]
+  },
+  {
+    "id": "jay_smith_islam_vs_christianity_comparison",
+    "title": "Islam vs. Christianity: A Side-by-Side Comparison",
+    "speaker": "Jay Smith",
+    "file": "jay_smith_islam_vs_christianity_comparison.html",
+    "tags": ["apologetics", "islam", "christianity", "comparison", "genesis"]
+  }
+]

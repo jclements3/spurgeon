@@ -738,6 +738,20 @@ body {
     <div id="index-verse-list" class="list-container" style="display:none"></div>
   </div>
 
+  <!-- RESOURCES -->
+  <div id="view-resources" class="view">
+    <div id="resources-list" class="list-container"></div>
+  </div>
+
+  <!-- RESOURCE DETAIL -->
+  <div id="view-resource-detail" class="view">
+    <div class="detail-header">
+      <div class="detail-title" id="resource-detail-title"></div>
+      <div class="detail-meta" id="resource-detail-meta"></div>
+    </div>
+    <div class="detail-text loading" id="resource-detail-text">Loading...</div>
+  </div>
+
   <!-- SEARCH -->
   <div id="view-search" class="view">
     <div class="search-input-wrap">
@@ -774,6 +788,10 @@ body {
   <button class="tab" data-tab="index" id="tab-index">
     <span class="tab-icon">&#x1F4D1;</span>
     <span class="tab-label">Index</span>
+  </button>
+  <button class="tab" data-tab="resources" id="tab-resources">
+    <span class="tab-icon">&#x1F4DA;</span>
+    <span class="tab-label">Resources</span>
   </button>
   <button class="tab" data-tab="search" id="tab-search">
     <span class="tab-icon">&#x1F50D;</span>
@@ -1070,6 +1088,7 @@ function switchTab(tab) {
 
   if (tab === 'favorites') renderFavorites();
   if (tab === 'index') renderIndex();
+  if (tab === 'resources') renderResources();
   if (tab === 'search') {
     setTimeout(function() { $searchInput.focus(); }, 100);
   }
@@ -1128,7 +1147,7 @@ function showView(id) {
 }
 
 function updateHeaderTitle() {
-  var titles = { sermons: 'Sermons', prayers: 'Prayers', favorites: 'Favorites', index: 'Index', search: 'Search' };
+  var titles = { sermons: 'Sermons', prayers: 'Prayers', favorites: 'Favorites', index: 'Index', resources: 'Resources', search: 'Search' };
   $headerTitle.textContent = titles[currentTab] || 'Spurgeon';
 }
 
@@ -1613,6 +1632,74 @@ document.getElementById('index-title-list').addEventListener('click', function(e
 document.getElementById('index-verse-list').addEventListener('click', function(e) {
   var item = e.target.closest('.list-item');
   if (item) openSermon(parseInt(item.dataset.num));
+});
+
+/* ========== RESOURCES ========== */
+var resourcesData = [];
+var resourcesRendered = false;
+
+function renderResources() {
+  if (resourcesRendered) return;
+  fetch('./data/extras/manifest.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      resourcesData = data;
+      resourcesRendered = true;
+      var html = '';
+      for (var i = 0; i < data.length; i++) {
+        var r = data[i];
+        html += '<div class="list-item" data-resource-id="' + r.id + '">'
+          + '<div class="list-body">'
+          + '<div class="list-title">' + escHtml(r.title) + '</div>'
+          + '<div class="list-sub">' + escHtml(r.speaker) + (r.location ? ' — ' + escHtml(r.location) : '') + '</div>'
+          + '</div></div>';
+      }
+      document.getElementById('resources-list').innerHTML = html;
+    })
+    .catch(function() {
+      document.getElementById('resources-list').innerHTML = '<div class="empty-state"><p>No resources available</p></div>';
+    });
+}
+
+function openResource(id) {
+  var r = null;
+  for (var i = 0; i < resourcesData.length; i++) {
+    if (resourcesData[i].id === id) { r = resourcesData[i]; break; }
+  }
+  if (!r) return;
+  currentDetailType = 'resource';
+  currentDetailItem = r;
+
+  document.getElementById('resource-detail-title').textContent = r.title;
+  document.getElementById('resource-detail-meta').textContent = r.speaker + (r.location ? ' — ' + r.location : '');
+
+  var textEl = document.getElementById('resource-detail-text');
+  textEl.className = 'detail-text loading';
+  textEl.textContent = 'Loading...';
+
+  showView('view-resource-detail');
+  $backBtn.style.display = 'flex';
+  $headerTitle.textContent = r.title;
+  history.pushState({ tab: currentTab, detail: 'resource', id: id }, '', '');
+
+  fetch('./data/extras/' + r.file)
+    .then(function(resp) {
+      if (!resp.ok) throw new Error('Not found');
+      return resp.text();
+    })
+    .then(function(html) {
+      textEl.className = 'detail-text';
+      textEl.innerHTML = html;
+    })
+    .catch(function() {
+      textEl.className = 'detail-text';
+      textEl.textContent = 'Resource not available.';
+    });
+}
+
+document.getElementById('resources-list').addEventListener('click', function(e) {
+  var item = e.target.closest('.list-item');
+  if (item && item.dataset.resourceId) openResource(item.dataset.resourceId);
 });
 
 /* ========== SEARCH ========== */
