@@ -1970,7 +1970,7 @@ function speakNative(prefix, text) {
     text: text,
     lang: 'en-GB',
     rate: 0.85 * speeds[st.speedIdx],
-    pitch: 1.0,
+    pitch: 0.8,
     volume: 1.0,
     category: 'playback'
   }).then(function() {
@@ -1991,7 +1991,7 @@ function speakWeb(prefix, text) {
   var utter = new SpeechSynthesisUtterance(text);
   utter.lang = 'en-GB';
   utter.rate = 0.85 * speeds[st.speedIdx];
-  utter.pitch = 1.0;
+  utter.pitch = 0.8;
   utter.volume = 1.0;
 
   utter.onend = function() {
